@@ -490,11 +490,11 @@ def plt_dd_cnv_z(savefig):
     
     plt.bar(x = range(0,len(props)), height = props, yerr = sems,
             align='center',width=0.6,color=sns.cubehelix_palette(8, start=.5, rot=-.5,)[2],alpha=.7,)
-    plt.ylabel('Proportion of constrained CNVs', fontsize=12)
+    plt.ylabel('Proportion of constrained CNVs (%)', fontsize=12)
     plt.xticks(ticks=range(0,len(props)), 
                labels=['DD\ncontrol','DD\ncase','DD\npathogenic', 'ClinVar'],
                fontsize=12,)
-    plt.ylim(0,1)
+    plt.yticks(ticks=np.arange(0, 1.1, .2),labels=[(int(i*100)) for i in np.arange(0, 1.1, .2)])
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
 
@@ -649,9 +649,10 @@ def plt_prop_roadmaplinks(savefig):
             yerr = sems,
             width = 0.5, 
             align = 'center', edgecolor = None, ecolor='#252525')
-    plt.ylabel('Proportion of non-coding\nwindows linked to a gene',fontsize=12.)
+    plt.ylabel('Proportion of enhancers\nlinked to a gene (%)',fontsize=12.)
     plt.xlabel('Constraint Z',fontsize=12.)
     plt.xticks([i+0.5 for i in x[:-1]], cut_bins[1:-1], fontsize = 10,)
+    plt.yticks(ticks=np.arange(0, 0.205, .05),labels=[(int(i*100)) for i in np.arange(0, 0.205, .05)])
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
@@ -664,47 +665,38 @@ def plt_prop_roadmaplinks(savefig):
 def plt_enh_geneset_z(savefig):
 
     download_fig_table('enh_gene_roadmaplinks.txt')
-    df_ge = pd.read_csv('fig_tables/enh_gene_roadmaplinks.txt',sep='\t')
-    anns = ['Haploinsufficient','MGI essential','OMIM dominant','LOEUF constrained','LOEUF unconstrained','Olfactory']
-    LL = []
-    for dist2gene in [0,100*1000]:
-        dfp = df_ge[df_ge['enh_gene_distance']>=dist2gene]
-        L = []
-        for ann in anns:
-            l = dfp[dfp[ann]]['enhancer_constraint_Z'].to_list()
-            L.append(l)
-        LL.append(L)
-        g1 = (dfp['Haploinsufficient']) | (dfp['MGI essential']) | (dfp['OMIM dominant']) | (dfp['LOEUF constrained'])
-        g2 = (dfp['LOEUF unconstrained']) | (dfp['Olfactory'])
-        l1 = dfp[g1]['enhancer_constraint_Z'].to_list()
-        l2 = dfp[(~g1) & g2]['enhancer_constraint_Z'].to_list()
+    df_ge = pd.read_csv("fig_tables/enh_gene_roadmaplinks.txt",sep="\t")
+    anns = ["Haploinsufficient","MGI essential","OMIM dominant","LOEUF constrained","LOEUF unconstrained","Olfactory"]
+    L = []
+    for ann in anns:
+        l = df_ge[df_ge[ann]]["enhancer_constraint_Z"].to_list()
+        L.append(l)
+    g1 = (df_ge["Haploinsufficient"]) | (df_ge["MGI essential"]) | (df_ge["OMIM dominant"]) | (df_ge["LOEUF constrained"])
+    g2 = (df_ge["LOEUF unconstrained"]) | (df_ge["Olfactory"])
+    l1 = df_ge[g1]["enhancer_constraint_Z"].to_list()
+    l2 = df_ge[(~g1) & g2]["enhancer_constraint_Z"].to_list()
 
     plt.clf()
-    fig, axs = plt.subplots(1, 2, figsize=(7.5, 5), sharey=True)
+    plt.figure(figsize=(3.5,5))
 
     boxprops = dict(linestyle='-', linewidth=0, color='white')
     whiskerprops = dict(linestyle='--', linewidth=1.5, color='#525252')
     medianprops = dict(linestyle='-', linewidth=1., color='white')
     colors =[sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]]*4 + ['#bababa']*2
+    
+    box = plt.boxplot(L[::-1], 
+                      vert = False, notch=True, patch_artist=True,meanline=True,widths = 0.5,showfliers=False,
+                      boxprops = boxprops,medianprops = medianprops,whiskerprops = whiskerprops)
+    for patch, color in zip(box['boxes'], colors[::-1]): patch.set_facecolor(color)
 
-    box0 = axs[0].boxplot(LL[0][::-1], 
-                          vert = False, notch=True, patch_artist=True,meanline=True,widths = 0.5,showfliers=False,
-                          boxprops = boxprops,medianprops = medianprops,whiskerprops = whiskerprops,)
-    box1 = axs[1].boxplot(LL[1][::-1], 
-                          vert = False, notch=True, patch_artist=True,meanline=True,widths = 0.5,showfliers=False,
-                          boxprops = boxprops,medianprops = medianprops,whiskerprops = whiskerprops,)
-    for patch, color in zip(box0['boxes'], colors[::-1]): patch.set_facecolor(color)
-    for patch, color in zip(box1['boxes'], colors[::-1]): patch.set_facecolor(color)
-
-    axs[0].set_xlabel('Enhancer constraint Z',fontsize = 12.)
-    axs[1].set_xlabel('Distal enhancer constraint Z',fontsize = 12.)
+    plt.xlabel("Enhancer constraint Z",fontsize = 12.)
     plt.yticks(range(1,len(anns)+1), anns[::-1], fontsize=12.)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
 
     if savefig:
-        plt.savefig(savefig, bbox_inches='tight') 
+        plt.savefig(savefig, bbox_inches='tight')  
 
 
 # Fig. 5c
