@@ -800,8 +800,8 @@ def plt_enhz_tissue_expr_corr(savefig):
                  linestyle='', marker='o', alpha=0.7,elinewidth=2,)
 
     plt.axvline(x = 0,color='#969696',linestyle='dashed')
-    plt.xlabel('Linear regression beta', fontsize=12)
-    plt.yticks(fontsize=12)
+    plt.xlabel("Gene expression ~ Enh constraint\n(coeff cond. on gene constraint)", fontsize=12)
+    plt.ylabel("Tissue", fontsize=12)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
