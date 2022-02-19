@@ -61,8 +61,8 @@ def plt_hist_freq_z(savefig):
     z2 = df_z[df_z['coding_prop']>0]['z'].to_list()
     
     plt.clf()
-    fig, ax1 = plt.subplots()
-    
+    fig, ax1 = plt.subplots(figsize=(6,4))
+
     color1, color2 = sns.cubehelix_palette(8, start=.5, rot=-.5,)[2], sns.cubehelix_palette(8)[2]
     label1, label2 = 'Non-coding','Coding'
     hist_bins = np.arange(-10,11,1)
@@ -100,6 +100,7 @@ def plt_aps_vs_z(savefig):
     hci = [float(line.strip().split('\t')[3])-float(line.strip().split('\t')[1]) for line in fh]
 
     plt.clf()
+    plt.figure(figsize=(6,4))
 
     color = sns.cubehelix_palette(start=.5, rot=-.5, )[-2]
     off = 0.5
@@ -224,7 +225,8 @@ def plt_enrichment_9p21(savefig):
         ci2plot.append([ci[0]-ci[1],ci[2]-ci[0]])
 
     plt.clf()
-    fig, ax1 = plt.subplots()
+    fig, ax1 = plt.subplots(figsize=(6,4))
+    
     color1 = sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]
     color2 = sns.cubehelix_palette(8)[2]
     color3 = sns.cubehelix_palette(start=.5, rot=-.5, )[-2]
@@ -665,38 +667,39 @@ def plt_prop_roadmaplinks(savefig):
 def plt_enh_geneset_z(savefig):
 
     download_fig_table('enh_gene_roadmaplinks.txt')
-    df_ge = pd.read_csv("fig_tables/enh_gene_roadmaplinks.txt",sep="\t")
-    anns = ["Haploinsufficient","MGI essential","OMIM dominant","LOEUF constrained","LOEUF unconstrained","Olfactory"]
+    df_ge = pd.read_csv('fig_tables/enh_gene_roadmaplinks.txt',sep='\t')
+    anns = ['Haploinsufficient','MGI essential','OMIM dominant','LOEUF constrained',
+            'Olfactory','LOEUF unconstrained','LOEUF underpowered']
     L = []
     for ann in anns:
-        l = df_ge[df_ge[ann]]["enhancer_constraint_Z"].to_list()
+        l = df_ge[df_ge[ann]]['enhancer_constraint_Z'].to_list()
         L.append(l)
-    g1 = (df_ge["Haploinsufficient"]) | (df_ge["MGI essential"]) | (df_ge["OMIM dominant"]) | (df_ge["LOEUF constrained"])
-    g2 = (df_ge["LOEUF unconstrained"]) | (df_ge["Olfactory"])
-    l1 = df_ge[g1]["enhancer_constraint_Z"].to_list()
-    l2 = df_ge[(~g1) & g2]["enhancer_constraint_Z"].to_list()
 
     plt.clf()
     plt.figure(figsize=(3.5,5))
 
     boxprops = dict(linestyle='-', linewidth=0, color='white')
     whiskerprops = dict(linestyle='--', linewidth=1.5, color='#525252')
-    medianprops = dict(linestyle='-', linewidth=1., color='white')
-    colors =[sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]]*4 + ['#bababa']*2
-    
+    medianprops = dict(linestyle='-', linewidth=2., color='white')
+    colors =[sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]]*4 + ['#bababa']*2 + ['white']
+    ecolors =[sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]]*4 + ['#bababa']*3
+
     box = plt.boxplot(L[::-1], 
                       vert = False, notch=True, patch_artist=True,meanline=True,widths = 0.5,showfliers=False,
                       boxprops = boxprops,medianprops = medianprops,whiskerprops = whiskerprops)
+    for patch, ecolor in zip(box['boxes'], ecolors[::-1]): patch.set(color=ecolor, linewidth=1.5)
     for patch, color in zip(box['boxes'], colors[::-1]): patch.set_facecolor(color)
 
-    plt.xlabel("Enhancer constraint Z",fontsize = 12.)
-    plt.yticks(range(1,len(anns)+1), anns[::-1], fontsize=12.)
+    plt.xlabel('Enhancer constraint Z',fontsize = 12.)
+    plt.yticks(range(1,len(anns)+1), [i.strip(' 2') for i in anns[::-1]], fontsize=12.)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
 
     if savefig:
-        plt.savefig(savefig, bbox_inches='tight')  
+        plt.savefig(savefig, bbox_inches='tight') 
+
+
 
 
 # Fig. 5c
@@ -709,19 +712,19 @@ def plt_geneset_loeuf0_enhz1(savefig):
     df_david['FDR'] = df_david['FDR'].astype(float)
     df_david['-log10(FDR)'] = (-1)*np.log10(df_david['FDR'])
     df_david = df_david.sort_values(by='-log10(FDR)')
-
+    df_david = df_david.tail(10)
     d_pval = dict(zip(df_david['Cluster Name'],df_david['-log10(FDR)']))
 
     plt.clf()
     plt.figure(figsize=(3.5,5))
 
-    plt.barh(y=range(0,len(d_pval)), width=d_pval.values(), height = 0.6, 
+    plt.barh(y=range(0,len(d_pval)), width=d_pval.values(), height = 0.7, 
              color = sns.cubehelix_palette(8, start=.5, rot=-.5,)[2], edgecolor='white')
 
     plt.axvline(x=(-1)*np.log10(0.05), color='#fb6a4a', linestyle='--')  
     plt.xlabel('-log10(FDR)',fontsize = 12.)
     plt.yticks(range(0,len(d_pval)), d_pval.keys(),fontsize = 12.)
-
+    
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
 
@@ -734,13 +737,13 @@ def plt_phastcons_loeuf0_enhz1(savefig):
     
     download_fig_table('enh_gene_roadmaplinks.txt')
     df_ge = pd.read_csv('fig_tables/enh_gene_roadmaplinks.txt',sep='\t')
-    dfp = df_ge[df_ge['LOEUF unconstrained']]
+    dfp = df_ge[df_ge['LOEUF underpowered']]
     l1 = dfp[dfp['enhancer_constraint_Z']>=2.23]['gene_phastCons'].to_list()
     l2 = dfp[dfp['enhancer_constraint_Z']<2.23]['gene_phastCons'].to_list()
+    print (len(l1),len(l2),np.median(l1),np.median(l2),u(l1,l2,alternative='greater'))
 
     plt.clf()
-    plt.figure(figsize=(2.5,5.))
-
+    plt.figure(figsize=(1.5,5.))
     boxprops = dict(linestyle='-', linewidth=0, color='white')
     whiskerprops = dict(linestyle='--', linewidth=1.5, color='#525252')
     medianprops = dict(linestyle='-', linewidth=1., color='white')
@@ -748,7 +751,7 @@ def plt_phastcons_loeuf0_enhz1(savefig):
     colors = [sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]] + ['#bababa']
 
     box = plt.boxplot([l1,l2],
-                      notch=True, patch_artist=True,meanline=True,widths = 0.6,showfliers=False,
+                      notch=True, patch_artist=True,meanline=True,widths = 0.5,showfliers=False,
                       boxprops = boxprops,medianprops = medianprops,whiskerprops = whiskerprops,)
     for patch, color in zip(box['boxes'], colors):patch.set_facecolor(color)
     for patch, color in zip(box['fliers'], colors):patch.set_markeredgecolor(color)  
@@ -762,6 +765,7 @@ def plt_phastcons_loeuf0_enhz1(savefig):
 
     if savefig:
         plt.savefig(savefig, bbox_inches='tight') 
+
 
 
 # Fig. 5e    
