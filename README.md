@@ -22,4 +22,8 @@ All figures presented in the manuscript can be reproduced using `generate_manusc
 ```
 python generate_manuscript_figures.py -fig 1
 ```
-will generate Figure_1a.pdf and Figure_1b.pdf in the current directory.
+will generate Figure_1a.pdf and Figure_1b.pdf in the current directory. Similarly, all extended figures in the manuscript can be reproduced by running 
+```
+python generate_manuscript_efigures.py -efig x
+```
+where x can be a single number from 1-6 or “all”.
