@@ -644,6 +644,141 @@ def plt_gwas_ccre_z(savefig):
         
 
 # efig. 4a
+def plt_z_vs_conservation_enh(savefig):
+    
+    download_fig_table('constraint_z_genome_1kb.annot.txt')
+    download_fig_table('genome_1kb.annot_dist2gene.txt')
+    download_fig_table('genome_1kb.phastCons_mean.txt')
+    df_z = pd.read_csv('fig_tables/constraint_z_genome_1kb.annot.txt',sep='\t')
+    d_dist2gene = dict([line.strip().split('\t')[3],float(line.strip().split('\t')[-1])] 
+                       for line in open('fig_tables/genome_1kb.annot_dist2gene.txt').readlines())
+    df_z['dist2gene'] = df_z['element_id'].map(d_dist2gene)
+    d_phast = dict([line.strip().split('\t')[0],float(line.strip().split('\t')[-1])] for line in 
+                   open('fig_tables/genome_1kb.phastCons_mean.txt').readlines()
+                   if int(line.strip().split('\t')[2])>500)
+    df_z['phastCons'] = df_z['element_id'].map(d_phast)
+
+    dfp = df_z[ (df_z['coding_prop']==0) & (df_z['dist2gene']>10*1000)]
+    dfp = dfp.dropna(subset=['z','phastCons'])
+    quant = 10
+    dfp['z_quant'] = pd.qcut(dfp['z'],quant,labels=range(1,quant+1))
+    dfp['phastCons_quant'] = pd.qcut(dfp['phastCons'],quant,labels=range(1,quant+1))
+
+    ann = 'FANTOM enhancers'
+    d_n = dfp.groupby(['z_quant','phastCons_quant'])[ann].apply(len).to_dict()
+    d_x = dfp[dfp[ann]].groupby(['z_quant','phastCons_quant']).apply(len).to_dict()
+    n0 = sum(d_n.values())
+    x0 = sum(d_x.values())
+    d_odds = {}
+    d_pval = {}
+    for k in d_n:
+        x, n = d_x[k], d_n[k]
+        odds, pval = stats.fisher_exact([[x, n-x], [x0, n0-x0]],alternative='two-sided')
+        d_odds[k] = odds
+        d_pval[k] = pval
+    data = []
+    labels = []
+    for i in range(1,quant+1):
+        data.append([d_odds[(j,i)] for j in range(1,quant+1)])
+        l = []
+        for j in range(1,quant+1):
+            odds = '%.2f' % d_odds[(j,i)] if d_pval[(j,i)]<=0.05 else ''
+            l.append(odds)
+        labels.append(l)
+
+    plt.clf()
+    plt.figure(figsize=(7,5))
+    with sns.axes_style('white'):
+        ax = sns.heatmap(
+            np.array(data[::-1]),
+            square = True,
+            vmin = 0., vmax = 2.,center = 1,
+            cmap=sns.diverging_palette(220, 20, as_cmap=True),
+            cbar=True,cbar_kws={'label': 'Enrichment of FANTOM enhancers'},
+            linewidths = 0.2, linecolor= 'lightgrey',
+            yticklabels = [str(i) for i in range(1,quant+1)][::-1],
+            xticklabels = [str(i) for i in range(1,quant+1)],
+            fmt = 's',
+            annot = np.array(labels[::-1]),
+                    )
+        plt.yticks(rotation=0,fontsize=10.)
+        plt.xlabel('Constraint Z decile',fontsize=12.)
+        plt.ylabel('Conservation score decile',rotation=90,fontsize=12.)
+
+        plt.tick_params(axis='both',top=False,right=False)
+        
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight') 
+        
+# efig. 4b
+def plt_z_vs_conservation_gwas(savefig):
+    
+    download_fig_table('constraint_z_genome_1kb.annot.txt')
+    download_fig_table('genome_1kb.annot_dist2gene.txt')
+    download_fig_table('genome_1kb.phastCons_mean.txt')
+    df_z = pd.read_csv('fig_tables/constraint_z_genome_1kb.annot.txt',sep='\t')
+    d_dist2gene = dict([line.strip().split('\t')[3],float(line.strip().split('\t')[-1])] 
+                       for line in open('fig_tables/genome_1kb.annot_dist2gene.txt').readlines())
+    df_z['dist2gene'] = df_z['element_id'].map(d_dist2gene)
+    d_phast = dict([line.strip().split('\t')[0],float(line.strip().split('\t')[-1])] for line in 
+                   open('fig_tables/genome_1kb.phastCons_mean.txt').readlines()
+                   if int(line.strip().split('\t')[2])>500)
+    df_z['phastCons'] = df_z['element_id'].map(d_phast)
+
+    dfp = df_z[ (df_z['coding_prop']==0) & (df_z['dist2gene']>10*1000)]
+    dfp = dfp.dropna(subset=['z','phastCons'])
+    quant = 10
+    dfp['z_quant'] = pd.qcut(dfp['z'],quant,labels=range(1,quant+1))
+    dfp['phastCons_quant'] = pd.qcut(dfp['phastCons'],quant,labels=range(1,quant+1))
+
+    ann = 'GWAS Catalog'
+    d_n = dfp.groupby(['z_quant','phastCons_quant'])[ann].apply(len).to_dict()
+    d_x = dfp[dfp[ann]].groupby(['z_quant','phastCons_quant']).apply(len).to_dict()
+    n0 = sum(d_n.values())
+    x0 = sum(d_x.values())
+    d_odds = {}
+    d_pval = {}
+    for k in d_n:
+        x, n = d_x[k], d_n[k]
+        odds, pval = stats.fisher_exact([[x, n-x], [x0, n0-x0]],alternative='two-sided')
+        d_odds[k] = odds
+        d_pval[k] = pval
+    data = []
+    labels = []
+    for i in range(1,quant+1):
+        data.append([d_odds[(j,i)] for j in range(1,quant+1)])
+        l = []
+        for j in range(1,quant+1):
+            odds = '%.2f' % d_odds[(j,i)] if d_pval[(j,i)]<=0.05 else ''
+            l.append(odds)
+        labels.append(l)
+
+    plt.clf()
+    plt.figure(figsize=(7,5))
+    with sns.axes_style('white'):
+        ax = sns.heatmap(
+            np.array(data[::-1]),
+            square = True,
+            vmin = 0., vmax = 2.,center = 1,
+            cmap=sns.diverging_palette(220, 20, as_cmap=True),
+            cbar=True,cbar_kws={'label': 'Enrichment of GWAS hits'},
+            linewidths = 0.2, linecolor= 'lightgrey',
+            yticklabels = [str(i) for i in range(1,quant+1)][::-1],
+            xticklabels = [str(i) for i in range(1,quant+1)],
+            fmt = 's',
+            annot = np.array(labels[::-1]),
+                    )
+        plt.yticks(rotation=0,fontsize=10.)
+        plt.xlabel('Constraint Z decile',fontsize=12.)
+        plt.ylabel('Conservation score decile',rotation=90,fontsize=12.)
+
+        plt.tick_params(axis='both',top=False,right=False)
+        
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight') 
+        
+
+# efig. 5a
 def plt_enrichment_re_10kb(savefig):
     
     download_fig_table('constraint_z_genome_1kb.annot.txt')
@@ -702,7 +837,7 @@ def plt_enrichment_re_10kb(savefig):
     if savefig:
         plt.savefig(savefig, bbox_inches='tight') 
 
-# efig. 4b
+# efig. 5b
 def plt_enrichment_gwas_10kb(savefig):
 
     download_fig_table('constraint_z_genome_1kb.annot.txt')
@@ -773,7 +908,7 @@ def plt_enrichment_gwas_10kb(savefig):
     if savefig:
         plt.savefig(savefig, bbox_inches='tight') 
 
-# efig. 4c
+# efig. 5c
 def plt_enrichment_gwas_ukb_10kb(savefig):
     
     download_fig_table('UKBB_94traits_release1.traits')
@@ -842,44 +977,46 @@ def plt_enrichment_gwas_ukb_10kb(savefig):
         plt.savefig(savefig, bbox_inches='tight') 
 
 
-# efig. 5a
+# efig. 6a
 def plt_mave_enh_scores(savefig):     
     
     download_fig_table('mave_enh_scores.txt')
-    df_mave = pd.read_csv('fig_tables/mave_enh_scores.txt',sep = '\t',index_col='element_name')
-    scores = ['Constraint Z','Unfiltered Z','Orion','CDTS','gwRVIS','JARVIS']
+    df_mave = pd.read_csv("fig_tables/mave_enh_scores.txt",sep = "\t",index_col="element_name")
+    scores = ["Constraint Z","Unfiltered Z","Orion","CDTS","gwRVIS","JARVIS","LINSIGHT"]
 
     plt.clf()
-    fig, axes = plt.subplots(len(scores)+1, 1, figsize=(len(df_mave)*0.7,len(scores)*1.7),sharex='col')
+    fig, axes = plt.subplots(len(scores)+1, 1, figsize=(len(df_mave)*0.7,len(scores)*1.7),sharex="col")
     
     color1 = sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]
     color2 = sns.cubehelix_palette(8, start=.5, rot=-.5,)[-3]
     color3 = sns.cubehelix_palette(8, start=.5, rot=-.5,)[-4]
-    colors = {'sig3':'#bdbdbd','sig2':color3,'sig1':color2}
-    labels = {'sig3':'p>0.05','sig2':'1e-5<p<0.05','sig1':'p<1e-5'}
+    colors = {"sig3":"#bdbdbd","sig2":color3,"sig1":color2}
+    labels = {"sig3":"p>0.05","sig2":"1e-5<p<0.05","sig1":"p<1e-5"}
 
     x = range(0,len(df_mave))
     bottom_vals = [0]*len(x)
-    for sig in ['sig1','sig2','sig3']:
-        vals = list(df_mave.sort_values(by='sig')[sig])
+    for sig in ["sig1","sig2","sig3"]:
+        vals = list(df_mave.sort_values(by="sig")[sig])
         axes[0].bar(x=x, height=vals, width = 0.7, color=colors[sig], edgecolor='white', alpha = .7,
                     bottom=list(bottom_vals), label = labels[sig])
         bottom_vals = [bottom_vals[i] + vals[i] for i in range(0,len(vals))]
-    axes[0].set_ylabel('Percentage of\nmutations',fontsize = 12.)
-    axes[0].legend(title='MAVE significance level',bbox_to_anchor=(1, 1), ncol=1,)
-    plt.setp(axes[0], xticks=x, xticklabels=[i.split()[0] for i in list(df_mave.sort_values(by='sig').index)])
+    axes[0].set_ylabel("Percentage of\nmutations",fontsize = 12.)
+    axes[0].legend(title="MAVE significance level",bbox_to_anchor=(1, 1), ncol=1,)
+    plt.setp(axes[0], xticks=x, xticklabels=[i.split()[0] for i in list(df_mave.sort_values(by="sig").index)])
     axes[0].xaxis.set_tick_params(labelbottom=True, rotation=30)
-    axes[0].set_title('Enhancers tested by MAVE',fontsize = 12.)
+    axes[0].set_title("Enhancers tested by MAVE",fontsize = 12.)
     
     for i in range(0,len(scores)):
         score = scores[i]
         ax = axes[i+1]  
-        vals = list(df_mave.sort_values(by='sig')[score])
+        vals = list(df_mave.sort_values(by="sig")[score])
         ax.scatter(x=x, y=vals, color=color1, edgecolor='white', alpha = .7,s=50)
         ax.plot(x, vals, color=color1, linestyle='--', lw=1., alpha = .7)
         ax.set_ylabel(score,fontsize = 12.) 
         ax.xaxis.set_tick_params(labelbottom=False)
-        dfp = df_mave[['sig',score]].dropna()
+        dfp = df_mave[["sig",score]].dropna()
+        print (len(dfp), score, 
+               scipy.stats.pearsonr(dfp["sig"],dfp[score])[0], scipy.stats.spearmanr(dfp["sig"],dfp[score])[0])
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     axes[0].tick_params(axis='both',top=False,right=False)
@@ -888,38 +1025,38 @@ def plt_mave_enh_scores(savefig):
     if savefig:
         plt.savefig(savefig, bbox_inches='tight') 
 
-# efig. 5b
+# efig. 6b
 def plt_mave_enh_scores_corr(savefig):     
     
     download_fig_table('mave_enh_scores.txt')
-    df_mave = pd.read_csv('fig_tables/mave_enh_scores.txt',sep = '\t',index_col='element_name')
-    scores = ['Constraint Z','Unfiltered Z','Orion','CDTS','gwRVIS','JARVIS']
-    cat = ['All','Z scored','Exl. UC88']
+    df_mave = pd.read_csv("fig_tables/mave_enh_scores.txt",sep = "\t",index_col="element_name")
+    scores = ["Constraint Z","Unfiltered Z","Orion","CDTS","gwRVIS","JARVIS","LINSIGHT"]
+    cat = ['All',"Z scored","Exl. UC88"]
 
     D = {}
     for score in scores:
-        dfp = df_mave[['sig',score]].dropna()
-        pearson = scipy.stats.pearsonr(dfp['sig'],dfp[score])[0]
-        spearman = scipy.stats.spearmanr(dfp['sig'],dfp[score])[0]
+        dfp = df_mave[["sig",score]].dropna()
+        pearson = scipy.stats.pearsonr(dfp["sig"],dfp[score])[0]
+        spearman = scipy.stats.spearmanr(dfp["sig"],dfp[score])[0]
         D[score] = [spearman]
-        dfp = df_mave[~df_mave['Constraint Z'].isna()][['sig',score]].dropna()
-        pearson = scipy.stats.pearsonr(dfp['sig'],dfp[score])[0]
-        spearman = scipy.stats.spearmanr(dfp['sig'],dfp[score])[0]
+        dfp = df_mave[~df_mave["Constraint Z"].isna()][["sig",score]].dropna()
+        pearson = scipy.stats.pearsonr(dfp["sig"],dfp[score])[0]
+        spearman = scipy.stats.spearmanr(dfp["sig"],dfp[score])[0]
         D[score] += [spearman]    
-        dfp = df_mave.drop(index=['UC88 enhancer'])[['sig',score]].dropna()
-        pearson = scipy.stats.pearsonr(dfp['sig'],dfp[score])[0]
-        spearman = scipy.stats.spearmanr(dfp['sig'],dfp[score])[0]
+        dfp = df_mave.drop(index=["UC88 enhancer"])[["sig",score]].dropna()
+        pearson = scipy.stats.pearsonr(dfp["sig"],dfp[score])[0]
+        spearman = scipy.stats.spearmanr(dfp["sig"],dfp[score])[0]
         D[score] += [spearman]
 
     plt.clf()
     fig, ax = plt.subplots(figsize=(len(cat)*2,len(scores)*0.6))
 
-    with sns.axes_style('white'):
+    with sns.axes_style("white"):
         ax = sns.heatmap(np.array([D[i] for i in scores]),
                          vmin = -1., vmax = 1.,center = 0,
                          cmap=sns.diverging_palette(220, 20, as_cmap=True),
                          cbar=True,cbar_kws={'label': 'Correlation'},
-                         linewidths = 0.2, linecolor= 'lightgrey',
+                         linewidths = 0.2, linecolor= "lightgrey",
                          yticklabels = scores,
                          xticklabels = False,
                          annot = True,
@@ -927,7 +1064,7 @@ def plt_mave_enh_scores_corr(savefig):
 
         plt.yticks(rotation=0,fontsize=12.)
         plt.xticks(rotation=0,fontsize=10.)
-        plt.title('Enhancers tested by MAVE',fontsize=12.)
+        plt.title("Enhancers tested by MAVE",fontsize=12.)
         plt.tight_layout()
         axT = ax.twiny()
         axT.set_xticks([1/6,0.5,1/6*5][:len(cat)])
@@ -940,7 +1077,110 @@ def plt_mave_enh_scores_corr(savefig):
         plt.savefig(savefig, bbox_inches='tight') 
 
 
-# efig. 6a
+# efig. 7a
+def plt_power_depl_1kb(savefig):     
+    
+    download_fig_table('powered_constraint_z4_by_depl.txt')
+    df_depl = pd.read_csv('fig_tables/powered_constraint_z4_by_depl.txt', sep='\t')
+    # window size
+    ws = 1000
+    dfp = df_depl[df_depl['Window_size'] == ws]
+
+    step = 0.1
+    depl_min, depl_max = 0.1, 0.5
+    l = np.arange(depl_min, depl_max+step,step)
+    if ws == 1000: l_e = [0.16, 0.36, 0.42]
+    if ws == 100: l_e = [0.27, 0.57, 0.65]
+    l = sorted(list(l)+l_e)
+    l = [round(i,3) for i in l]
+
+    label_sfx = {0.16: '(50th pctl exon)', 0.36: '(90th pctl exon)', 0.42: '(95th pctl exon)',
+                0.27: '(50th pctl exon)', 0.57: '(90th pctl exon)', 0.65: '(95th pctl exon)'}
+    colors = sns.cubehelix_palette(len(l), start=.5, rot=-.5,)
+
+    plt.clf()
+    plt.figure(figsize=(6,4))
+
+    for depl in l:
+        x = dfp[dfp['depl']==depl]['Sample_size'].to_list()
+        y = dfp[dfp['depl']==depl]['Percent'].to_list()
+        i = l.index(depl)
+        color = colors[i]
+        lw = 3
+        label = '{0}%'.format(round(depl*100))
+        ls = 'solid'
+        if depl in label_sfx:
+            label += '\n'+label_sfx[depl]
+            ls = 'dotted'
+        plt.plot(x, y, color=color, lw=lw, label=label, ls=ls )
+
+    plt.legend(title='Depletion of variation', fontsize = 11.,bbox_to_anchor=(1, 1), )
+    plt.yticks([0,.2,.4,.6,.8, 1.0], ['0','20','40','60','80','100'])
+    plt.xscale('log')
+    plt.xlabel('Sample size required',fontsize = 12.,)
+    if ws == 1000: plt.ylabel('Percent of 1kb windows powered\nto detect constraint (Z>4)',fontsize = 12.,)
+    if ws == 100: plt.ylabel('Percent of 100bp windows powered\nto detect constraint (Z>4)',fontsize = 12.,)
+
+    n_v3 = 76156
+    plt.axvline(x = n_v3, color='#969696', linestyle='dashed',lw=2.0)
+    plt.axhline(y = .8, color='#fcbba1',)
+
+    sns.despine(left=False, right=True, top=True, bottom=False)
+    plt.tick_params(axis='both',top=False,right=False)
+
+# efig. 7b
+def plt_power_depl_100bp(savefig):     
+    
+    download_fig_table('powered_constraint_z4_by_depl.txt')
+    df_depl = pd.read_csv('fig_tables/powered_constraint_z4_by_depl.txt', sep='\t')
+    # window size
+    ws = 100
+    dfp = df_depl[df_depl['Window_size'] == ws]
+
+    step = 0.1
+    depl_min, depl_max = 0.1, 0.5
+    l = np.arange(depl_min, depl_max+step,step)
+    if ws == 1000: l_e = [0.16, 0.36, 0.42]
+    if ws == 100: l_e = [0.27, 0.57, 0.65]
+    l = sorted(list(l)+l_e)
+    l = [round(i,3) for i in l]
+
+    label_sfx = {0.16: '(50th pctl exon)', 0.36: '(90th pctl exon)', 0.42: '(95th pctl exon)',
+                0.27: '(50th pctl exon)', 0.57: '(90th pctl exon)', 0.65: '(95th pctl exon)'}
+    colors = sns.cubehelix_palette(len(l), start=.5, rot=-.5,)
+
+    plt.clf()
+    plt.figure(figsize=(6,4))
+
+    for depl in l:
+        x = dfp[dfp['depl']==depl]['Sample_size'].to_list()
+        y = dfp[dfp['depl']==depl]['Percent'].to_list()
+        i = l.index(depl)
+        color = colors[i]
+        lw = 3
+        label = '{0}%'.format(round(depl*100))
+        ls = 'solid'
+        if depl in label_sfx:
+            label += '\n'+label_sfx[depl]
+            ls = 'dotted'
+        plt.plot(x, y, color=color, lw=lw, label=label, ls=ls )
+
+    plt.legend(title='Depletion of variation', fontsize = 11.,bbox_to_anchor=(1, 1), )
+    plt.yticks([0,.2,.4,.6,.8, 1.0], ['0','20','40','60','80','100'])
+    plt.xscale('log')
+    plt.xlabel('Sample size required',fontsize = 12.,)
+    if ws == 1000: plt.ylabel('Percent of 1kb windows powered\nto detect constraint (Z>4)',fontsize = 12.,)
+    if ws == 100: plt.ylabel('Percent of 100bp windows powered\nto detect constraint (Z>4)',fontsize = 12.,)
+
+    n_v3 = 76156
+    plt.axvline(x = n_v3, color='#969696', linestyle='dashed',lw=2.0)
+    plt.axhline(y = .8, color='#fcbba1',)
+
+    sns.despine(left=False, right=True, top=True, bottom=False)
+    plt.tick_params(axis='both',top=False,right=False)
+
+
+# efig. 8a
 def plt_hist_freq_z_chrx(savefig):
     
     download_fig_table('constraint_z_genome_1kb_chrx.annot.txt')
@@ -976,7 +1216,7 @@ def plt_hist_freq_z_chrx(savefig):
     if savefig:
         plt.savefig(savefig, bbox_inches='tight') 
         
-# efig. 6b
+# efig. 8b
 def plt_enrichment_re_chrx(savefig):
     
     download_fig_table('constraint_z_genome_1kb_chrx.annot.txt')    

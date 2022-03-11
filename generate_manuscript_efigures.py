@@ -45,21 +45,31 @@ if fig_x.lower() == "all":
     plt_gwas_ccre_z("eFigure_3c.pdf")
 
     print ("Plotting eFig.4a ...")
-    plt_enrichment_re_10kb("eFigure_4a.pdf")
+    plt_z_vs_conservation_enh("eFigure_4a.pdf")
     print ("Plotting eFig.4b ...")
-    plt_enrichment_gwas_10kb("eFigure_4b.pdf")
-    print ("Plotting eFig.4c ...")
-    plt_enrichment_gwas_ukb_10kb("eFigure_4c.pdf")
+    plt_z_vs_conservation_gwas("eFigure_4b.pdf")
 
     print ("Plotting eFig.5a ...")
-    plt_mave_enh_scores("eFigure_5a.pdf")
+    plt_enrichment_re_10kb("eFigure_5a.pdf")
     print ("Plotting eFig.5b ...")
-    plt_mave_enh_scores_corr("eFigure_5b.pdf")
+    plt_enrichment_gwas_10kb("eFigure_5b.pdf")
+    print ("Plotting eFig.5c ...")
+    plt_enrichment_gwas_ukb_10kb("eFigure_5c.pdf")
 
     print ("Plotting eFig.6a ...")
-    plt_hist_freq_z_chrx("eFigure_6a.pdf")
+    plt_mave_enh_scores("eFigure_6a.pdf")
     print ("Plotting eFig.6b ...")
-    plt_enrichment_re_chrx("eFigure_6b.pdf")
+    plt_mave_enh_scores_corr("eFigure_6b.pdf")
+
+    print ("Plotting eFig.7a ...")
+    plt_power_depl_1kb("eFigure_7a.pdf")
+    print ("Plotting eFig.7b ...")
+    plt_power_depl_100bp("eFigure_7b.pdf")
+
+    print ("Plotting eFig.8a ...")
+    plt_hist_freq_z_chrx("eFigure_8a.pdf")
+    print ("Plotting eFig.8b ...")
+    plt_enrichment_re_chrx("eFigure_8b.pdf")
 
 
 elif fig_x == "1":
@@ -91,21 +101,31 @@ elif fig_x == "3":
     plt_gwas_ccre_z("eFigure_3c.pdf")
 elif fig_x == "4":
     print ("Plotting eFig.4a ...")
-    plt_enrichment_re_10kb("eFigure_4a.pdf")
+    plt_z_vs_conservation_enh("eFigure_4a.pdf")
     print ("Plotting eFig.4b ...")
-    plt_enrichment_gwas_10kb("eFigure_4b.pdf")
-    print ("Plotting eFig.4c ...")
-    plt_enrichment_gwas_ukb_10kb("eFigure_4c.pdf")
+    plt_z_vs_conservation_gwas("eFigure_4b.pdf")
 elif fig_x == "5":
     print ("Plotting eFig.5a ...")
-    plt_mave_enh_scores("eFigure_5a.pdf")
+    plt_enrichment_re_10kb("eFigure_5a.pdf")
     print ("Plotting eFig.5b ...")
-    plt_mave_enh_scores_corr("eFigure_5b.pdf")
+    plt_enrichment_gwas_10kb("eFigure_5b.pdf")
+    print ("Plotting eFig.5c ...")
+    plt_enrichment_gwas_ukb_10kb("eFigure_5c.pdf")
 elif fig_x == "6":
     print ("Plotting eFig.6a ...")
-    plt_hist_freq_z_chrx("eFigure_6a.pdf")
+    plt_mave_enh_scores("eFigure_6a.pdf")
     print ("Plotting eFig.6b ...")
-    plt_enrichment_re_chrx("eFigure_6b.pdf")
+    plt_mave_enh_scores_corr("eFigure_6b.pdf")
+elif fig_x == "7":
+    print ("Plotting eFig.7a ...")
+    plt_power_depl_1kb("eFigure_7a.pdf")
+    print ("Plotting eFig.7b ...")
+    plt_power_depl_100bp("eFigure_7b.pdf")
+elif fig_x == "8":
+    print ("Plotting eFig.8a ...")
+    plt_hist_freq_z_chrx("eFigure_8a.pdf")
+    print ("Plotting eFig.8b ...")
+    plt_enrichment_re_chrx("eFigure_8b.pdf")
 
 
 
