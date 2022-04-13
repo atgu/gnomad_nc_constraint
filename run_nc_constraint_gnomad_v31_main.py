@@ -291,11 +291,6 @@ def main(args):
     rf.fit(x_train, y_train)
     r2 = rf.score(x_test, y_test)
     y_pred = rf.predict(x_test)
-    pearson = scipy.stats.pearsonr(y_test['variant_count'].tolist(),y_pred)[0]
-
-    pickle.dump(rf, open('{0}/tmp/RF_f18_dnm_1M_retrained.pkl'.format(output_dir), 'wb'))
-    os.system('gsutil cp {0}/tmp/RF_f18_dnm_1M_retrained.pkl {1}'.format(output_dir, output_bucket))
-
 
     ### Apply RF model to the gnomAD dataset, per 1kb
 
