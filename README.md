@@ -1,5 +1,5 @@
 # Code for gnomAD v3 WGS flagship manuscript
-Manuscript at: [Chen et al., 2022](https://www.biorxiv.org/content/10.1101/2022.03.20.485034v1).
+Manuscript at: [Chen et al., 2022](https://www.biorxiv.org/content/10.1101/2022.03.20.485034v2).
 
 This repository provides 
 
@@ -26,4 +26,4 @@ will generate Figure_1a.pdf and Figure_1b.pdf in the current directory. Similarl
 ```
 python generate_manuscript_efigures.py -efig x
 ```
-where x can be a single number from 1-6 or “all”.
+where x can be a single number from 1-8 or “all”.
