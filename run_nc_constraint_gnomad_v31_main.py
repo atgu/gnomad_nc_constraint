@@ -6,14 +6,14 @@ import pandas as pd
 import csv
 import os
 import sys
+from functools import reduce
 import numpy as np
 import scipy
 from scipy import stats
 import math
 import sklearn
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import r2_score
-from sklearn.model_selection import KFold
+from sklearn.decomposition import IncrementalPCA
+import statsmodels.api as sm
 import pickle
 
 input_bucket = 'gs://gnomad-nc-constraint-v31-paper'
@@ -31,7 +31,7 @@ def main(args):
     output_bucket = args.output_bucket
     output_dir = args.output_dir
     # skip_hail = args.skip_hail
-    os.mkdir('{0}/tmp'.format(output_dir))
+    if not os.path.exists('{0}/tmp'.format(output_dir)): os.mkdir('{0}/tmp'.format(output_dir))
 
     ### Prefilter context ht and genome ht
     context_ht = hl.read_table('{0}/context_prepared.ht'.format(input_bucket))
@@ -175,7 +175,7 @@ def main(args):
     hl.read_table('{0}/observed_counts_genome_1kb.ht'.format(output_bucket)).export(
         '{0}/observed_counts_genome_1kb.txt'.format(output_bucket))
 
-    # compute expected number of variants per 1kb
+    # compute expected number of variants per 1kb, per context
     po_ht = hl.import_table('{0}/mutation_rate_by_context_methyl.txt'.format(output_bucket),
                             delimiter='\t', 
                             types={'methylation_level':hl.tint, 
@@ -186,135 +186,92 @@ def main(args):
                                    'fitted_po':hl.tfloat}).key_by('context','ref','alt','methylation_level')
     possible_ht = possible_ht.key_by('context','ref','alt','methylation_level')
     possible_ht = possible_ht.annotate(expected=possible_ht.variant_count*po_ht[possible_ht.key].fitted_po)
-    possible_ht = possible_ht.key_by('element_id')
+    possible_ht = possible_ht.key_by('element_id','context')
 
-    expected_ht = possible_ht.group_by(possible_ht.element_id).aggregate(
+    expected_ht = possible_ht.group_by(possible_ht.key).aggregate(
         possible=hl.agg.sum(possible_ht.variant_count),
         expected=hl.agg.sum(possible_ht.expected))
-    expected_ht.write('{0}/expected_counts_by_context_methyl_genome_1kb.ht'.format(output_bucket))
-    expected_ht = hl.read_table('{0}/expected_counts_by_context_methyl_genome_1kb.ht'.format(output_bucket))
+    expected_ht.write('{0}/expected_counts_per_context_methyl_genome_1kb.ht'.format(output_bucket))
+    expected_ht = hl.read_table('{0}/expected_counts_per_context_methyl_genome_1kb.ht'.format(output_bucket))
     expected_ht.annotate(expected = hl.format('%.8f', expected_ht.expected)).export(
-        '{0}/expected_counts_by_context_methyl_genome_1kb.txt'.format(output_bucket))
+        '{0}/expected_counts_per_context_methyl_genome_1kb.txt'.format(output_bucket))
 
 
-    ### Train local sequence context and regional genomic features to predict DNM, per 1M
+    ### Adjust the effects of regional genomic features on mutation rates, per 1kb
 
-    # compute context-specific mutation rate for DNMs
-    context_ht = hl.read_table('{0}/context_prefiltered.ht'.format(output_bucket))
-    context_ht = filter_black_regions(context_ht)  
-
-    dnm_ht = hl.import_table('{0}/misc/DNM_decode_psychencode.flip2hl.txt'.format(input_bucket),
-                             delimiter='\t', 
-                             types={'locus': hl.tlocus('GRCh38'), 'ref': hl.tstr, 'alt': hl.tstr}).key_by('locus')
-    dnm_ht = dnm_ht.annotate(alleles = [dnm_ht.ref, dnm_ht.alt]).key_by('locus','alleles').select()
-    dnm_ht = dnm_ht.repartition(2000)
-    dnm_ht = context_ht.semi_join(dnm_ht)
-
-    grouping = hl.struct(context=dnm_ht.context, ref=dnm_ht.ref, alt=dnm_ht.alt, methylation_level=dnm_ht.methyl_level)
-    output = {'variant_count': hl.agg.count()}
-    observed_ht = dnm_ht.group_by(**grouping).aggregate(**output)
-    # observed_ht.write('{0}/observed_counts_by_context_methyl_dnm.ht'.format(output_bucket))
-
-    grouping = hl.struct(context=context_ht.context, ref=context_ht.ref, alt=context_ht.alt, methylation_level=context_ht.methyl_level)
-    output = {'variant_count': hl.agg.count()}
-    possible_ht = context_ht.group_by(**grouping).aggregate(**output)
-    # possible_ht.write('{0}/possible_counts_by_context_methyl_dnm.ht'.format(output_bucket))
-
-    po_ht = possible_ht.annotate(
-        observed = observed_ht[possible_ht.key].variant_count,
-        proportion_observed = observed_ht[possible_ht.key].variant_count/possible_ht.variant_count)
-    po_ht.rename({'variant_count' : 'possible'}).write(
-        '{0}/proportion_observed_by_context_methyl_dnm.ht'.format(output_bucket))
-
-    # count possible variants by context and methyl, per 1M
-    context_ht = annotate_genome_element(context_ht,'{0}/misc/hg38.chrom.1M.bed'.format(input_bucket))
-    grouping = hl.struct(
-        context=context_ht.context, ref=context_ht.ref, alt=context_ht.alt, methylation_level=context_ht.methyl_level, 
-        element_id = context_ht.element_id,)
-    output = {'variant_count': hl.agg.count()}
-    possible_ht = context_ht.group_by(**grouping).aggregate(**output)
-    possible_ht.write('{0}/possible_counts_by_context_methyl_dnm_1M.ht'.format(output_bucket))
-
-    # count observed DNMs per 1M (save for training)
-    dnm_ht = annotate_genome_element(dnm_ht,'{0}/misc/hg38.chrom.1M.bed'.format(input_bucket))
-    grouping = hl.struct(element_id = dnm_ht.element_id)
-    output = {'variant_count': hl.agg.count()}
-    observed_ht = dnm_ht.group_by(**grouping).aggregate(**output)
-    observed_ht.write('{0}/observed_counts_dnm_1M.ht'.format(output_bucket))
-    hl.read_table('{0}/observed_counts_dnm_1M.ht'.format(output_bucket)).export(
-        '{0}/observed_counts_dnm_1M.txt'.format(output_bucket))
-
-    # compute expected DNMs per 1M
-    possible_ht = hl.read_table('{0}/possible_counts_by_context_methyl_dnm_1M.ht'.format(output_bucket)).key_by(
-        'context','ref','alt','methylation_level')
-    po_ht = hl.read_table('{0}/proportion_observed_by_context_methyl_dnm.ht'.format(output_bucket)).key_by(
-      'context','ref','alt','methylation_level')
-    possible_ht = possible_ht.annotate(expected=possible_ht.variant_count*po_ht[possible_ht.key].proportion_observed)
-    possible_ht = possible_ht.key_by('element_id')
-
-    expected_ht = possible_ht.group_by(possible_ht.element_id).aggregate(
-        possible=hl.agg.sum(possible_ht.variant_count),
-        expected=hl.agg.sum(possible_ht.expected))
-    expected_ht.write('{0}/expected_counts_by_context_methyl_dnm_1M.ht'.format(output_bucket))
-    expected_ht = hl.read_table('{0}/expected_counts_by_context_methyl_dnm_1M.ht'.format(output_bucket))
-    expected_ht.annotate(expected = hl.format('%.8f', expected_ht.expected)).export(
-        '{0}/expected_counts_by_context_methyl_dnm_1M.txt'.format(output_bucket))
-
-    os.system('gsutil cp {0}/expected_counts_by_context_methyl_dnm_1M.txt {1}'.format(output_bucket,output_dir))
-    os.system('gsutil cp {0}/observed_counts_dnm_1M.txt {1}'.format(output_bucket,output_dir))
-
-    # combine expected DNMs with regional genomic features, and train on the observed DNMs
-    os.system('gsutil cp {0}/misc/genomic_features17_1M.txt {1}/tmp/'.format(input_bucket,output_dir))
-
-    df_expected = pd.read_csv('{0}/expected_counts_by_context_methyl_dnm_1M.txt'.format(output_dir), sep='\t', index_col='element_id')
-    df_ft = pd.read_csv('{0}/tmp/genomic_features17_1M.txt'.format(output_dir), sep='\t', index_col='element_id')
-    df_x_order = ['dist2telo','dist2cent','GC_content','expected','RT_BG02','LCR','SINE','LINE','recomb_male','recomb_female',
-                  'met_sperm','met_oocyte','met_preimplantation','met_pgc','Nucleosome','cDNM_maternal_05M','cDNM_paternal_05M','CpG_island']
-
-    df_x = df_expected.join(df_ft, how='inner')[df_x_order]
-    df_y = pd.read_csv('{0}/observed_counts_dnm_1M.txt'.format(output_dir), sep='\t', index_col='element_id')
-
-    # random forest regression: observed ~ expected (by sequence context)+ genomic features
-    df_xy = df_y.join([df_x], how = 'inner')
-    df_x = df_x[df_x.index.isin(df_xy.index)].sort_index()
-    df_y = df_y[df_y.index.isin(df_xy.index)].sort_index()
-
-    kf = KFold(n_splits=10, shuffle=True, random_state=0)
-    test_index = df_y.iloc[list(kf.split(df_y))[-1][1]].index.tolist()
-
-    x_train = df_x[~df_x.index.isin(test_index)]
-    x_test = df_x[df_x.index.isin(test_index)]
-    y_train = df_y[~df_y.index.isin(test_index)]
-    y_test = df_y[df_y.index.isin(test_index)]
-
-    rf = RandomForestRegressor(n_estimators=300, n_jobs=-1, max_features=3/4,verbose=0, random_state=0)
-    rf.fit(x_train, y_train)
-    r2 = rf.score(x_test, y_test)
-    y_pred = rf.predict(x_test)
-
-    ### Apply RF model to the gnomAD dataset, per 1kb
-
-    os.system('gsutil cp {0}/expected_counts_by_context_methyl_genome_1kb.txt {1}'.format(output_bucket,output_dir))
+    # os.system('gsutil cp {0}/expected_counts_per_context_methyl_genome_1kb.txt {1}'.format(output_bucket,output_dir))
     os.system('gsutil cp {0}/observed_counts_genome_1kb.txt {1}'.format(output_bucket,output_dir))
-    os.system('gsutil cp {0}/misc/genomic_features17_1kb.txt {1}/tmp/'.format(input_bucket,output_dir))
-    os.system('gsutil cp {0}/misc/RF_f18_dnm_1M.pkl {1}/tmp/'.format(input_bucket,output_dir))
+    os.system('gsutil cp {0}/mutation_rate_by_context_methyl.txt {1}'.format(output_bucket,output_dir))
+    os.system('gsutil cp {0}/misc/genomic_features13_genome_1kb.txt {1}/tmp/'.format(input_bucket,output_dir))
+    os.system('gsutil cp {0}/misc/genomic_features13_sel.txt {1}/tmp/'.format(input_bucket,output_dir))
+    os.system('gsutil -m cp {0}/logit_pickles/* {1}/tmp/'.format(input_bucket,output_dir))
+
+    def ft_zscore2(ft_table,ft_mean,ft_std):
+        for ft in ft_table.columns:
+            ft_table[ft] = (ft_table[ft]-ft_mean[ft])/ft_std[ft]
+        return ft_table
 
     # load features
-    df_expected = pd.read_csv('{0}/expected_counts_by_context_methyl_genome_1kb.txt'.format(output_dir), sep='\t', index_col='element_id')
-    df_ft = pd.read_csv('{0}/tmp/genomic_features17_1kb.txt'.format(output_dir), sep='\t', index_col='element_id')
-    df_x_order = ['dist2telo','dist2cent','GC_content','expected','RT_BG02','LCR','SINE','LINE','recomb_male','recomb_female',
-                  'met_sperm','met_oocyte','met_preimplantation','met_pgc','Nucleosome','cDNM_maternal_05M','cDNM_paternal_05M','CpG_island']
-    df_x = df_expected.join(df_ft, how='inner')[df_x_order]
+    df_ft_ = pd.read_csv('{0}/tmp/genomic_features13_genome_1kb.txt'.format(output_dir),sep='\t')
+    df_ft_sel_ = pd.read_csv('{0}/tmp/genomic_features13_sel.txt'.format(output_dir),sep='\t')
+    ft_corr_met = ['GC_content','SINE','met_sperm','Nucleosome','CpG_island']
 
-    # predict expected number of variants from sequence context + genomic features 
-    rf = pickle.load(open('{0}/tmp/RF_f18_dnm_1M.pkl'.format(output_dir), 'rb'))
-    y_pred = rf.predict(df_x)
-    df_x['predicted'] = y_pred
+    # compute the adjustment factor r for each context
+    contexts = set([line.strip().split('\t')[0] for line in open('{0}/mutation_rate_by_context_methyl.txt'.format(output_dir)).readlines()[1:]])
+    contexts = sorted(list(contexts))
+
+    df_adj_l = []
+    for context in contexts:
+        # select features
+        df_ft_sel = df_ft_sel_[df_ft_sel_['context'] == context]
+        if context in ['ACG','CCG','GCG','TCG']: df_ft_sel = df_ft_sel[ ~ (df_ft_sel['feature'].isin(ft_corr_met))]
+        ft_sel = list(df_ft_sel['feature']+'_'+df_ft_sel['window'])
+        df_ft = df_ft_[ ['element_id'] + ft_sel].drop_duplicates().dropna()
+
+        # load model
+        model = 'logit_regularized_dnm01_{0}_pbonf_pca'.format(context) 
+        logit = pickle.load(open('{0}/tmp/{1}.pkl'.format(output_dir,model), 'rb'))
+        pca = pickle.load(open('{0}/tmp/{1}.pca.pkl'.format(output_dir,model), 'rb'))
+        
+        # define, standardize, and transform predictive variables
+        df_x = df_ft[ft_sel]
+        f_ms = '{0}/tmp/{1}.ft_mean_std.txt'.format(output_dir,model)
+        ft_mean = dict([line.strip().split('\t')[0],float(line.strip().split('\t')[1])] for line in open(f_ms).readlines())
+        ft_std = dict([line.strip().split('\t')[0],float(line.strip().split('\t')[2])] for line in open(f_ms).readlines())
+        df_x = ft_zscore2(df_x,ft_mean,ft_std)
+        df_x_pca = pca.transform(df_x)
+
+        # compute adjustment factor r for each context
+        df_adj = df_ft[['element_id']]
+        df_adj['pred_{0}'.format(context)] = logit.predict(sm.add_constant(df_x_pca, has_constant='add'))
+        ave = logit.predict(sm.add_constant(pd.DataFrame([0]*len(ft_sel)).transpose(),has_constant='add'))[0]
+        df_adj['rr_{0}'.format(context)] = df_adj['pred_{0}'.format(context)]/ave
+        df_adj_l.append(df_adj)
+
+    # combine and export adjustment factor r across all contexts, per 1kb
+    df_adj = reduce(lambda  left,right: pd.merge(left,right,on=['element_id'], how='outer'), df_adj_l).fillna(1)
+    df_adj.to_csv(
+        '{0}/expected_counts_per_context_methyl_adj_genome_1kb.txt'.format(output_dir),
+        sep='\t', quoting=csv.QUOTE_NONE, header=True, index=False)
+
+    # compute the adjusted number of expected variants
+    df_l = []
+    for context in contexts:
+        if 'rr_{0}'.format(context) not in df_adj.columns: df_adj['rr_{0}'.format(context)] = 1
+        df = df_adj[['element_id','rr_{0}'.format(context)]].rename(columns={'rr_{0}'.format(context):'rr'})
+        df['context'] = context
+        df_l.append(df)
+    df_adj_context = pd.concat(df_l,axis=0)
+
+    df_expected = pd.read_csv('{0}/expected_counts_per_context_methyl_genome_1kb.txt'.format(output_dir), sep='\t')
+    df_predicted = df_expected.merge(df_adj_context,how='inner',on=['element_id','context'])
+    df_predicted['predicted'] = df_predicted['expected']*df_predicted['rr']
+    df_predicted = df_predicted.set_index('element_id')
+    df_predicted = df_predicted.groupby('element_id')[['possible','predicted']].apply(sum)
 
     # compute z scores from observed and expected counts
     df_observed = pd.read_csv('{0}/observed_counts_genome_1kb.txt'.format(output_dir), sep='\t', index_col='element_id')
-    df_z = df_expected[['possible']].join(
-        df_x[['predicted']].rename(columns={'predicted':'expected'})).join(
+    df_z = df_predicted[['possible','predicted']].rename(columns={'predicted':'expected'}).join(
         df_observed.rename(columns={'variant_count':'observed'}))
     df_z['observed'] = df_z['observed'].fillna(value=0)
 
@@ -351,7 +308,6 @@ def main(args):
     os.system('mv generic.py {0}/tmp/'.format(output_dir))
     os.system('mv constraint_basics.py {0}/tmp/'.format(output_dir))
     os.system('mv nc_constraint_utils.py {0}/tmp/'.format(output_dir))
-    os.system('mv {0}/*1M.txt {0}/tmp/'.format(output_dir))
     # only keep non-redundant files in local dir
     os.system('mv {0}/possible*.txt {0}/tmp/'.format(output_dir))
     os.system('mv {0}/observed*.txt {0}/tmp/'.format(output_dir))
