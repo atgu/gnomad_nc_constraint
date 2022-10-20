@@ -20,6 +20,24 @@ from scipy.stats import norm
 import math
 from sklearn.metrics import r2_score
 
+from itertools import cycle
+from sklearn import svm, datasets
+from sklearn.metrics import roc_curve, auc
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import label_binarize
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.metrics import roc_auc_score
+import sklearn
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import PoissonRegressor
+from sklearn.decomposition import PCA
+from sklearn.decomposition import IncrementalPCA
+from sklearn.metrics import r2_score
+from sklearn.model_selection import KFold
+import pickle
+import statsmodels.api as sm
 
 def sem(x,n):
     if n == 0: return 0.0
@@ -707,6 +725,10 @@ def plt_delta_pip(savefig):
            & (df_pip['susie.pip']<pip_) 
            & (df_pip['delta_pip']>d_pip)
                 ]
+                
+    plt.clf()
+    plt.figure(figsize=(6,4))
+
     y = dfp['delta_pip']
     x = dfp['susie.pip_updated']
     plt.scatter(x=x,y=y,color=sns.cubehelix_palette(start=.5, rot=-.5, )[-2], alpha=0.4)
@@ -724,7 +746,11 @@ def plt_delta_pip(savefig):
 # efig. 5a
 def plt_comparison_roc(pos,neg,dist2exon,savefig):
     
-    download_fig_table('comparisons_*.txt')
+    download_fig_table('comparisons.tar.gz')
+    os.chdir('fig_tables')
+    os.system('tar -xvf comparisons.tar.gz')
+    os.chdir('../')
+
     scores = ['z','Orion','CDTS','gwRVIS','DR','phastCons','phyloP','GERP']
     score_color = {
         'z':sns.cubehelix_palette(start=.5, rot=-.5, )[-2],
@@ -750,10 +776,10 @@ def plt_comparison_roc(pos,neg,dist2exon,savefig):
     plt.clf()
     fig,ax = plt.subplots(1, figsize=(4.5,4.5))
 
-    df_1 = pd.read_csv('fig_tables/{0}.txt'.format(df_pos[pos]),sep='\t')
+    df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
     df_1 = df_1[df_1['dist2exon']>=dist2exon]
     df_1['group'] = 1
-    df_0 = pd.read_csv('fig_tables/{0}.txt'.format(df_neg[neg]),sep='\t')
+    df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
     df_0 = df_0[df_0['dist2exon']>=dist2exon]
     df_0['group'] = 0 
     if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
@@ -809,7 +835,11 @@ def plt_comparison_auc_af(pos,savefig):
         d2 = dict([k,d[k]/len(df)*100] for k in d)
         return d,d2
     
-    download_fig_table('comparisons_*.txt')
+    download_fig_table('comparisons.tar.gz')
+    os.chdir('fig_tables')
+    os.system('tar -xvf comparisons.tar.gz')
+    os.chdir('../')
+
     scores = ['z','Orion','CDTS','gwRVIS','DR']
     score_color = {
         'z':sns.cubehelix_palette(start=.5, rot=-.5, )[-2],
@@ -838,14 +868,14 @@ def plt_comparison_auc_af(pos,savefig):
 
     sampling = 10
 
-    df_1 = pd.read_csv('fig_tables/{0}.txt'.format(df_pos[pos]),sep='\t')
+    df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
     df_1['group'] = 1
 
     d_auc = {}
     for score in scores: 
         d_auc[score] = []
         for neg in ['gnomad_mac1','gnomad_maf001','gnomad_maf001_01','gnomad_maf01_1','gnomad_maf1_5','gnomad_maf5']:
-            df_0 = pd.read_csv('fig_tables/{0}.txt'.format(df_neg[neg]),sep='\t')
+            df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
             df_0['group'] = 0
             if sampling: df_0 = df_0.sample(n=min(sampling*len(df_1),len(df_0)), random_state=1)
 
@@ -891,7 +921,11 @@ def plt_comparison_auc_af(pos,savefig):
 # efig. 6
 def plt_comparison_roc_z(pos,neg,dist2exon,savefig):
     
-    download_fig_table('comparisons_*.txt')
+    download_fig_table('comparisons.tar.gz')
+    os.chdir('fig_tables')
+    os.system('tar -xvf comparisons.tar.gz')
+    os.chdir('../')
+
     scores = ['z','z_sliding100','z_trimer','z_heptamer',]
     score_label = {
         'z': 'Constraint Z',
@@ -923,10 +957,10 @@ def plt_comparison_roc_z(pos,neg,dist2exon,savefig):
     plt.clf()
     fig,ax = plt.subplots(1, figsize=(4.5,4.5))
 
-    df_1 = pd.read_csv('fig_tables/{0}.txt'.format(df_pos[pos]),sep='\t')
+    df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
     df_1 = df_1[df_1['dist2exon']>=dist2exon]
     df_1['group'] = 1
-    df_0 = pd.read_csv('fig_tables/{0}.txt'.format(df_neg[neg]),sep='\t')
+    df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
     df_0 = df_0[df_0['dist2exon']>=dist2exon]
     df_0['group'] = 0 
     if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
@@ -1081,7 +1115,10 @@ def plt_power_depl(ws,savefig):
 # efig. 8c
 def plt_comparison_auc_ws(savefig):
     
-    download_fig_table('comparisons_*.txt')
+    download_fig_table('comparisons.tar.gz')
+    os.chdir('fig_tables')
+    os.system('tar -xvf comparisons.tar.gz')
+    os.chdir('../')
     
     ws = ['100bp','500bp','2kb','3kb']
     scores = ['z']
@@ -1108,11 +1145,9 @@ def plt_comparison_auc_ws(savefig):
     for pos in ['gwas_catalog','gwas_fine-mapping','gwas_fine-mapping_hc','clinvar_pathogenic']:
         if pos == 'clinvar_pathogenic': neg = 'gnomad_mac1'
         d_dat_auc[pos] = {}
-        df_1 = pd.read_csv('fig_tables/{0}.txt'.format(df_pos[pos]),sep='\t')
-        df_1 = df_1[df_1['dist2exon']>=dist2exon]
+        df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
         df_1['group'] = 1
-        df_0 = pd.read_csv('fig_tables/{0}.txt'.format(df_neg[neg]),sep='\t')
-        df_0 = df_0[df_0['dist2exon']>=dist2exon]
+        df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
         df_0['group'] = 0 
         if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
 
@@ -1160,7 +1195,10 @@ def plt_comparison_auc_ws(savefig):
 # efig. 8d
 def plt_comparison_auc_pop(savefig):
     
-    download_fig_table('comparisons_*.txt')
+    download_fig_table('comparisons.tar.gz')
+    os.chdir('fig_tables')
+    os.system('tar -xvf comparisons.tar.gz')
+    os.chdir('../')
     pops = ['global','nfe']
 
     scores = ['z']
@@ -1187,11 +1225,9 @@ def plt_comparison_auc_pop(savefig):
     for pos in ['gwas_catalog','gwas_fine-mapping','gwas_fine-mapping_hc','clinvar_pathogenic']:
         if pos == 'clinvar_pathogenic': neg = 'gnomad_mac1'
         d_dat_auc[pos] = {}
-        df_1 = pd.read_csv('fig_tables/{0}.txt'.format(df_pos[pos]),sep='\t')
-        df_1 = df_1[df_1['dist2exon']>=dist2exon]
+        df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
         df_1['group'] = 1
-        df_0 = pd.read_csv('fig_tables/{0}.txt'.format(df_neg[neg]),sep='\t')
-        df_0 = df_0[df_0['dist2exon']>=dist2exon]
+        df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
         df_0['group'] = 0 
         if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
 
