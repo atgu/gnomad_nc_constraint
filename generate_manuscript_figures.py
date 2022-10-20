@@ -36,7 +36,7 @@ if fig_x.lower() == "all":
     print ("Plotting Fig.3b ...")
     plt_comparison_roc("clinvar_pathogenic","gnomad_mac1",0,"Figure_3b.pdf")
     print ("Plotting Fig.3c ...")
-    plt_dominance_scores("gwasg","Figure_3c.pdf")
+    plt_dominance_scores("gwas","Figure_3c.pdf")
     print ("Plotting Fig.3d ...")
     plt_dominance_scores("clinvar_pathogenic","Figure_3d.pdf")
 
@@ -79,7 +79,7 @@ elif fig_x == "3":
     print ("Plotting Fig.3b ...")
     plt_comparison_roc("clinvar_pathogenic","gnomad_mac1",0,"Figure_3b.pdf")
     print ("Plotting Fig.3c ...")
-    plt_dominance_scores("gwasg","Figure_3c.pdf")
+    plt_dominance_scores("gwas","Figure_3c.pdf")
     print ("Plotting Fig.3d ...")
     plt_dominance_scores("clinvar_pathogenic","Figure_3d.pdf")
 elif fig_x == "4":
