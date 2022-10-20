@@ -426,7 +426,12 @@ def plt_plg_gwas(savefig):
 # Fig. 3a-b
 def plt_comparison_roc(pos,neg,dist2exon,savefig):
     
-    download_fig_table('comparisons_*.txt')
+    # download_fig_table('comparisons_*.txt')
+    download_fig_table('comparisons.tar.gz')
+    os.chdir('fig_tables')
+    os.system('tar -xvf comparisons.tar.gz')
+    os.chdir('../')
+    
     scores = ['z','Orion','CDTS','gwRVIS','DR','phastCons','phyloP','GERP']
     score_color = {
         'z':sns.cubehelix_palette(start=.5, rot=-.5, )[-2],
@@ -452,10 +457,10 @@ def plt_comparison_roc(pos,neg,dist2exon,savefig):
     plt.clf()
     fig,ax = plt.subplots(1, figsize=(4.5,4.5))
 
-    df_1 = pd.read_csv('fig_tables/{0}.txt'.format(df_pos[pos]),sep='\t')
+    df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
     df_1 = df_1[df_1['dist2exon']>=dist2exon]
     df_1['group'] = 1
-    df_0 = pd.read_csv('fig_tables/{0}.txt'.format(df_neg[neg]),sep='\t')
+    df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
     df_0 = df_0[df_0['dist2exon']>=dist2exon]
     df_0['group'] = 0 
     if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
@@ -499,7 +504,12 @@ def plt_comparison_roc(pos,neg,dist2exon,savefig):
 def plt_dominance_scores(pos,savefig):
     
     from dominance_analysis import Dominance
-    download_fig_table('comparisons_*.txt')
+    # download_fig_table('comparisons_*.txt')
+    download_fig_table('comparisons.tar.gz')
+    os.chdir('fig_tables')
+    os.system('tar -xvf comparisons.tar.gz')
+    os.chdir('../')
+
     scores = ['z','Orion','CDTS','gwRVIS','DR','phastCons','phyloP','GERP']
     score_color = {
         'z':sns.cubehelix_palette(start=.5, rot=-.5, )[-2],
@@ -525,15 +535,15 @@ def plt_dominance_scores(pos,savefig):
     sampling = 10
 
     if pos == 'gwas':
-        df_1 = pd.concat([pd.read_csv('fig_tables/comparisons_gwas_catalog_repl.txt',sep='\t'),
-                          pd.read_csv('fig_tables/comparisons_gwas_fine-mapping_pip09.txt',sep='\t')
+        df_1 = pd.concat([pd.read_csv('fig_tables/comparisons/comparisons_gwas_catalog_repl.txt',sep='\t'),
+                          pd.read_csv('fig_tables/comparisons/comparisons_gwas_fine-mapping_pip09.txt',sep='\t')
                          ]).drop_duplicates(subset=['locus'])
         neg = 'gnomad_maf5'
     elif pos=='clinvar_pathogenic':
-        df_1 = pd.read_csv('fig_tables/{0}.txt'.format(df_pos[pos]),sep='\t')
+        df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
         neg = 'gnomad_mac1'
 
-    df_0 = pd.read_csv('fig_tables/{0}.txt'.format(df_neg[neg]),sep='\t')    
+    df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')    
     df_1['group'] = 1
     df_0['group'] = 0
 
