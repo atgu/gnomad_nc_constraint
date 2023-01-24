@@ -71,7 +71,7 @@ def download_fig_table(file_name):
 
 
 # Fig. 1a
-def plt_hist_freq_z(savefig):
+def plt_hist_freq_gnocchi(savefig):
     
     download_fig_table('constraint_z_genome_1kb.annot.txt')
     df_z = pd.read_csv('fig_tables/constraint_z_genome_1kb.annot.txt',sep='\t',index_col='element_id')
@@ -92,7 +92,7 @@ def plt_hist_freq_z(savefig):
     ax2.hist(z2, bins=hist_bins, edgecolor=None, color = color2,alpha=0.7,density=False, label= label2)
 
     ax1.legend(loc='upper left', fontsize = 12.)
-    ax1.set_xlabel('Constraint Z',fontsize = 12.)   
+    ax1.set_xlabel('Gnocchi',fontsize = 12.)   
     ax1.set_ylabel('Frequency',fontsize = 12.,  color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
     ax2.set_ylabel('Frequency',fontsize = 12.,  color=color2)
@@ -110,7 +110,7 @@ def plt_hist_freq_z(savefig):
 
 
 # Fig. 1b
-def plt_aps_vs_z(savefig):
+def plt_aps_vs_gnocchi(savefig):
     
     download_fig_table('gnomad_v2.1_sv.sites.lft38.z_1kb_bootstrap.txt')
     fh = open('fig_tables/gnomad_v2.1_sv.sites.lft38.z_1kb_bootstrap.txt').readlines()[1:]
@@ -131,7 +131,7 @@ def plt_aps_vs_z(savefig):
     
     plt.axhline(y = 0.0,color='#525252',linestyle='dashed')
     plt.ylabel('APS',fontsize = 12.)
-    plt.xlabel('Constraint Z',fontsize = 12.)
+    plt.xlabel('Gnocchi',fontsize = 12.)
     plt.xticks(range(-4,5), range(-4,5))
     plt.xlim(-5,5)
     
@@ -164,7 +164,6 @@ def plt_enrichment_re(savefig):
         'ENCODE CTCF-only':'#969696',
         'Super enhancers': cmap[-2],
         'FANTOM enhancers':cmap[-4],
-        'FANTOM lncRNAs': cmap[-5],
     }
 
     for ann in ['ENCODE cCRE-PLS','ENCODE cCRE-pELS','ENCODE cCRE-dELS','ENCODE CTCF-only'] + ['Super enhancers','FANTOM enhancers']:
@@ -198,9 +197,9 @@ def plt_enrichment_re(savefig):
                     )
 
     plt.axhline(y = 1.0,color='#969696',linestyle='dashed')
-    plt.legend(bbox_to_anchor=(1, 0.75),fontsize = 12.)
+    plt.legend(loc='upper left', fontsize = 12.)
     plt.xticks(bins[1:],bins[1:],)
-    plt.xlabel('Constraint Z', fontsize=12)
+    plt.xlabel('Gnocchi', fontsize=12)
     plt.ylabel('Enrichment', fontsize=12)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
@@ -272,7 +271,7 @@ def plt_enrichment_gwas(savefig):
     plt.legend(loc='upper left', fontsize = 12.)
     plt.rcParams['legend.title_fontsize'] = 12.        
     plt.xticks(bins[1:],bins[1:],)
-    plt.xlabel('Constraint Z', fontsize=12)
+    plt.xlabel('Gnocchi', fontsize=12)
     plt.ylabel('Enrichment', fontsize=12)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
@@ -411,7 +410,7 @@ def plt_plg_gwas(savefig):
 
     plt.ylim(-6,12)
     plt.legend(loc='upper left', fontsize = 12.)
-    plt.ylabel('Constraint Z', fontsize=12)
+    plt.ylabel('Gnocchi', fontsize=12)
     plt.xlabel('Coordinates (Mb)', fontsize=12)
     plt.xticks(ticks=dfp['row_num'].to_list()[::10], 
                labels=[(i/1000000) for i in dfp['start'].to_list()][::10],rotation=45)
@@ -432,25 +431,26 @@ def plt_comparison_roc(pos,neg,dist2exon,savefig):
     os.system('tar -xvf comparisons.tar.gz')
     os.chdir('../')
     
-    scores = ['z','Orion','CDTS','gwRVIS','DR','phastCons','phyloP','GERP']
+    scores = ['Orion','CDTS','gwRVIS','DR','phastCons','phyloP','GERP']
+    scores.append('z')
     score_color = {
         'z':sns.cubehelix_palette(start=.5, rot=-.5, )[-2],
         'Orion':'#33a02c','CDTS':'#fb9a99','DR':'#993404','gwRVIS':'#6baed6',   
         'phastCons':'#969696','phyloP':'#737373','GERP':'#bdbdbd'
     }
-    score_label = {'z': 'Constraint Z'} 
+    score_label = {'z': 'Gnocchi'} 
 
     df_pos = {'gwas_catalog': 'comparisons_gwas_catalog_repl', 
               'gwas_fine-mapping':'comparisons_gwas_fine-mapping_pip09', 
               'gwas_fine-mapping_hc':'comparisons_gwas_fine-mapping_pip09_hc', 
-              'clinvar_pathogenic':'comparisons_clinvar_pathogenic',     
+              'clinvar_plp_hgmd':'comparisons_likely_pathogenic_clinvar_hgmd',     
           }
     title_label = {'gwas_catalog':'GWAS Catalog','gwas_fine-mapping':'GWAS fine-mapping',
                    'gwas_fine-mapping_hc':'GWAS fine-mapping\n(high confidence)',
-                   'clinvar_pathogenic':'ClinVar pathogenic'}
+                   'clinvar_plp_hgmd':'Likely pathogenic'}
     df_neg = {
-        'gnomad_maf5': 'comparisons_gnomad_maf5', 
-        'gnomad_mac1': 'comparisons_gnomad_mac1.sample_100k', 
+        'topmed_maf5':'comparisons_topmed_maf5.sampled.cov', 
+        'topmed_mac1':'comparisons_topmed_mac1.sampled.cov', 
           }
     sampling = 10
     
@@ -463,7 +463,7 @@ def plt_comparison_roc(pos,neg,dist2exon,savefig):
     df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
     df_0 = df_0[df_0['dist2exon']>=dist2exon]
     df_0['group'] = 0 
-    if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
+    if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=714)
     df_01 = pd.concat([df_1,df_0]).drop_duplicates(subset=['locus'])
 
     d_auc = {}
@@ -517,19 +517,19 @@ def plt_dominance_scores(pos,savefig):
         'phastCons':'#969696','phyloP':'#737373','GERP':'#bdbdbd'
     }
     score_label = dict([i,i] for i in scores)
-    score_label['z'] = 'Constraint Z'
+    score_label['z'] = 'Gnocchi'
 
     df_pos = {'gwas_catalog': 'comparisons_gwas_catalog_repl', 
               'gwas_fine-mapping':'comparisons_gwas_fine-mapping_pip09', 
               'gwas_fine-mapping_hc':'comparisons_gwas_fine-mapping_pip09_hc', 
-              'clinvar_pathogenic':'comparisons_clinvar_pathogenic',     
+              'clinvar_plp_hgmd':'comparisons_likely_pathogenic_clinvar_hgmd',     
           }
     title_label = {'gwas_catalog':'GWAS Catalog','gwas_fine-mapping':'GWAS fine-mapping',
                    'gwas_fine-mapping_hc':'GWAS fine-mapping\n(high confidence)',
-                   'clinvar_pathogenic':'ClinVar pathogenic'}
+                   'clinvar_plp_hgmd':'Likely pathogenic'}
     df_neg = {
-        'gnomad_maf5': 'comparisons_gnomad_maf5', 
-        'gnomad_mac1': 'comparisons_gnomad_mac1.sample_100k', 
+        'topmed_maf5':'comparisons_topmed_maf5.sampled.cov', 
+        'topmed_mac1':'comparisons_topmed_mac1.sampled.cov', 
           }
 
     sampling = 10
@@ -538,16 +538,16 @@ def plt_dominance_scores(pos,savefig):
         df_1 = pd.concat([pd.read_csv('fig_tables/comparisons/comparisons_gwas_catalog_repl.txt',sep='\t'),
                           pd.read_csv('fig_tables/comparisons/comparisons_gwas_fine-mapping_pip09.txt',sep='\t')
                          ]).drop_duplicates(subset=['locus'])
-        neg = 'gnomad_maf5'
-    elif pos=='clinvar_pathogenic':
+        neg = 'topmed_maf5'
+    elif pos=='clinvar_plp_hgmd':
         df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
-        neg = 'gnomad_mac1'
+        neg = 'topmed_mac1'
 
     df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')    
     df_1['group'] = 1
     df_0['group'] = 0
 
-    if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
+    if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=714)
 
     df_01 = pd.concat([df_1,df_0]).drop_duplicates(subset=['locus'])
     for score in scores:
@@ -568,7 +568,7 @@ def plt_dominance_scores(pos,savefig):
     dom = 'Percentage Relative Importance'
 
     d_score_type = {
-        'Constraint Z':'Human lineage-specific constraint',
+        'Gnocchi':'Human lineage-specific constraint',
         'Orion':'Human lineage-specific constraint',
         'CDTS':'Human lineage-specific constraint',
         'gwRVIS':'Human lineage-specific constraint',
@@ -580,7 +580,7 @@ def plt_dominance_scores(pos,savefig):
     c = sns.cubehelix_palette(start=.5, rot=-.5, )[-2]
     c2 = sns.cubehelix_palette(start=.5, rot=-.5, )[-3]
     d_color = {'Human lineage-specific constraint':c,'Interspecies conservation':c2}
-    d_yl = {'gwas':'GWAS','clinvar_pathogenic':'ClinVar'}
+    d_yl = {'gwas':'GWAS','clinvar_plp_hgmd':'Likely pathogenic'}
 
     dfp['score'] = [score_label['_'.join(i.split('_')[:-1])] for i in dfp.index]
     dfp['score_type'] = dfp['score'].map(d_score_type)
@@ -605,7 +605,7 @@ def plt_dominance_scores(pos,savefig):
 
 
 # Fig. 4a
-def plt_dd_cnv_z(savefig):
+def plt_cnv_dd_gnocchi(savefig):
 
     download_fig_table('cnvDevDelay_z_1kb_nc_max.txt')
     df_cnv = pd.read_csv('fig_tables/cnvDevDelay_z_1kb_nc_max.txt', sep = '\t', 
@@ -718,8 +718,9 @@ def plt_dd_cnv_logit(savefig):
     labels = labels[::-1]
     ax.legend(handles,labels,fontsize = 12.,loc='best')
 
-    plt.xlabel('DD Case vs. control log(OR)',fontsize = 12.)
-    plt.yticks([1,5,9,13], ft[::-1], fontsize = 12.)
+    plt.xlabel('DD case vs. control log(OR)',fontsize = 12.)
+    plt.yticks([1,5,9,13], ['Non-coding constraint\n(Gnocchi)', 'Gene constraint\n(LOEUF)',
+                            'Gene number','CNV size'][::-1], fontsize = 12.)
     plt.axvline(x=0., color='#969696')
     plt.grid(linestyle='--',axis='x')
 
@@ -774,8 +775,7 @@ def plt_cnv_ihh(savefig):
                label='IHH gene',alpha=0.7,
           )
         
-    position = -3.2
-    position = -1.2
+    position = -3.
     spacing = 0.3
     for n in [2,3,1,4]:
         dup_range = dfp[dfp['IHH_dup{0}'.format(n)]>0]['row_num'].to_list()
@@ -786,12 +786,12 @@ def plt_cnv_ihh(savefig):
     plt.hlines(y = position, xmin=min(dup_range), xmax=max(dup_range),color='#969696',linewidth=2,
                label='Dup in syndactyly/craniosynostosis')
 
-    plt.legend(loc='upper right',fontsize = 12.)
-    plt.ylabel('Constraint Z', fontsize=12)
+    # plt.legend(loc='upper right',fontsize = 12.)
+    plt.ylabel('Gnocchi', fontsize=12)
     plt.xlabel('2q35 Coordinates (Mb)', fontsize=12)
     plt.xticks(ticks=dfp['row_num'].to_list()[::10], 
                labels=[(i/1000000) for i in dfp['start'].to_list()][::10],rotation=45)
-    plt.ylim(-4,10)
+    plt.ylim(-5,10)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
@@ -863,9 +863,9 @@ def plt_cnv_recurrent(savefig):
                label='Deletion in control') 
 
     plt.ylim(-10,10)
-    plt.legend(loc='upper left', fontsize = 12.)
+    # plt.legend(loc='upper left', fontsize = 12.)
 
-    plt.ylabel('Constraint Z', fontsize=12)
+    plt.ylabel('Gnocchi', fontsize=12)
     plt.xlabel('Coordinates (Mb)', fontsize=12)
     plt.xticks(ticks=dfp['row_num'].to_list()[::20], 
                labels=[(i/1000000) for i in dfp['start'].to_list()][::20],rotation=45)
@@ -875,6 +875,45 @@ def plt_cnv_recurrent(savefig):
 
     if savefig:
         plt.savefig(savefig, bbox_inches='tight') 
+
+def plt_cnv_recurrent_gnocchi(savefig):
+    
+    download_fig_table('cnv_dd_recurrent.txt')
+    dfp = pd.read_csv('fig_tables/cnv_dd_recurrent.txt',sep='\t')
+    dfp['seg_cases'] = dfp[[i for i in dfp.columns if 'seg_case_' in i]].sum(axis=1)
+    dfp['seg_ctrls'] = dfp[[i for i in dfp.columns if 'seg_ctrl_' in i]].sum(axis=1)
+    
+    plt.clf()
+    fig,ax = plt.subplots(1, figsize=(4.,4))
+    color1 = sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]
+    color2 = sns.cubehelix_palette(start=.5, rot=-.5, )[-2]
+
+    l1 = list(dfp[ (dfp['seg_cases'] ==12)]['z'])
+    l2 = list(dfp[ (dfp['seg_cases'] > 0) & (dfp['seg_cases'] < 12)]['z'])
+    print (len(l1),len(l2),np.median(l1),np.median(l2),u(l1,l2,alternative='greater').pvalue)
+    sns.kdeplot(l2,shade=True,alpha=0.7,
+                color=color1,
+                label = 'Case, N<12')
+    sns.kdeplot(l1,shade=True,alpha=0.7,
+                color=color2,
+                label = 'Case, N=12')
+    l = list(dfp[ (dfp['seg_ctrls'] > 0)]['z'])
+    sns.kdeplot(l,shade=False,alpha=1.,color='#bdbdbd',label = 'Control',lw=2)
+
+    handles,labels = ax.get_legend_handles_labels()
+    leg = ax.legend(handles[:-1][::-1]+handles[-1:],labels[:-1][::-1]+labels[-1:],
+                    loc='upper right',
+             )
+    leg._legend_box.align = 'left'
+    plt.xlabel('Gnocchi', fontsize=12)
+    plt.ylabel('Density', fontsize=12)
+    plt.xlim(-6,10)
+
+    sns.despine(left=False, right=True, top=True, bottom=False)
+    plt.tick_params(axis='both',top=False,right=False)
+    
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight')
 
 
 # Fig. 5a
@@ -907,7 +946,7 @@ def plt_prop_roadmaplinks(savefig):
             width = 0.5, 
             align = 'center', edgecolor = None, ecolor='#252525')
     plt.ylabel('Proportion of non-coding regions\nas enhancers of specific genes (%)',fontsize=12.)
-    plt.xlabel('Constraint Z',fontsize=12.)
+    plt.xlabel('Gnocchi',fontsize=12.)
     plt.xticks([i+0.5 for i in x[:-1]], cut_bins[1:-1], fontsize = 10,)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
@@ -918,7 +957,7 @@ def plt_prop_roadmaplinks(savefig):
 
 
 # Fig. 5b
-def plt_enh_geneset_z(savefig):
+def plt_enh_geneset_gnocchi(savefig):
 
     download_fig_table('enh_gene_roadmaplinks.txt')
     df_ge = pd.read_csv('fig_tables/enh_gene_roadmaplinks.txt',sep='\t')
@@ -944,7 +983,7 @@ def plt_enh_geneset_z(savefig):
     for patch, ecolor in zip(box['boxes'], ecolors[::-1]): patch.set(color=ecolor, linewidth=1.5)
     for patch, color in zip(box['boxes'], colors[::-1]): patch.set_facecolor(color)
 
-    plt.xlabel('Enhancer constraint Z',fontsize = 12.)
+    plt.xlabel('Enhancer Gnocchi',fontsize = 12.)
     plt.yticks(range(1,len(anns)+1), [i.strip(' 2') for i in anns[::-1]], fontsize=12.)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
@@ -955,7 +994,7 @@ def plt_enh_geneset_z(savefig):
 
 
 # Fig. 5c
-def plt_enhz_loeuf_roc(savefig):
+def plt_enh_gnocchi_loeuf_roc(savefig):
 
     download_fig_table('enhz_loeuf_pred.txt')
     df_ge = pd.read_csv('fig_tables/enhz_loeuf_pred.txt',sep='\t')
@@ -979,7 +1018,7 @@ def plt_enhz_loeuf_roc(savefig):
     color2 = sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]
     cmap = sns.cubehelix_palette(start=.5, rot=-.5, )
     score_color = {'pred1':color2,'pred2':color1}
-    score_label = {'pred1':'LOEUF','pred2':'LOEUF+Enhancer\nconstraint Z'}
+    score_label = {'pred1':'LOEUF','pred2':'LOEUF+Enhancer\nGnocchi'}
     
     scores = ['pred1','pred2']
     d_auc = {}
@@ -1007,6 +1046,7 @@ def plt_enhz_loeuf_roc(savefig):
 
     plt.ylabel('True positive rate', fontsize=12)
     plt.xlabel('False positive rate', fontsize=12)
+    plt.title("Classification of constrained genes\n(LOEUF underpowered)")
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
@@ -1016,7 +1056,7 @@ def plt_enhz_loeuf_roc(savefig):
 
 
 # Fig. 5d
-def plt_enhz_tissue_expr_corr(savefig):    
+def plt_enh_gnocchi_tissue_expr_corr(savefig):    
     
     def enhz_gene_expr_lm(y, x):
         import statsmodels.api as sm
@@ -1056,15 +1096,15 @@ def plt_enhz_tissue_expr_corr(savefig):
                )
         
     plt.axvline(x = 0,color='#969696',linestyle='dashed')
-    plt.xlabel('Gene expression ~ \nEnhancer constraint Z', fontsize=12) ### paper
+    plt.xlabel('Gene expression ~ \nEnhancer Gnocchi', fontsize=12) ### paper
     plt.ylabel('Tissue', fontsize=12)
+    plt.title("Prediction of gene expression\n")
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
 
     if savefig:
         plt.savefig(savefig, bbox_inches='tight') 
-
 
 
 
