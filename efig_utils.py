@@ -268,7 +268,7 @@ def plt_genomic_ft_sel(savefig):
 
 
 # efig. 1d
-def plt_scatter_oe_z(savefig):
+def plt_scatter_oe_gnocchi(savefig):
     
     download_fig_table('constraint_z_genome_1kb.annot.txt')
     df_z = pd.read_csv('fig_tables/constraint_z_genome_1kb.annot.txt',sep='\t',index_col='element_id')
@@ -282,7 +282,7 @@ def plt_scatter_oe_z(savefig):
 
     plt.scatter(x=x, y=y, c=c, cmap=sns.diverging_palette(220, 20, as_cmap=True), alpha=0.5, vmin=-10, vmax=10)
     cbar = plt.colorbar()
-    cbar.ax.set_ylabel('Constraint Z score')
+    cbar.ax.set_ylabel('Gnocchi score')
     
     markz = 4
     df_mark = df_z[ (df_z['z']>=markz-0.01) & (df_z['z']<=markz+0.01)]
@@ -307,7 +307,7 @@ def plt_scatter_oe_z(savefig):
 
 
 # efig. 1e
-def plt_scatter_oe_z_chrx(savefig):
+def plt_scatter_oe_gnocchi_chrx(savefig):
     
     download_fig_table('constraint_z_genome_1kb_chrx.annot.txt')
     df_z = pd.read_csv('fig_tables/constraint_z_genome_1kb_chrx.annot.txt',sep='\t')
@@ -321,7 +321,7 @@ def plt_scatter_oe_z_chrx(savefig):
     
     plt.scatter(x=x, y=y, c=c, cmap=sns.diverging_palette(220, 20, as_cmap=True), alpha=0.5, vmin=-10, vmax=10)
     cbar = plt.colorbar()
-    cbar.ax.set_ylabel('Constraint Z score')
+    cbar.ax.set_ylabel('Gnocchi score')
 
     markz = 4.7
     df_mark = df_z[ (df_z['z']>=markz-0.01) & (df_z['z']<=markz+0.01)]
@@ -346,7 +346,7 @@ def plt_scatter_oe_z_chrx(savefig):
 
 
 # efig. 2a
-def plt_prop_z4_cd(savefig):
+def plt_prop_gnocchi4_cd(savefig):
     
     download_fig_table('constraint_z_genome_1kb.annot.txt')
     download_fig_table('constraint_z_genome_1kb_exonic.txt')
@@ -386,7 +386,7 @@ def plt_prop_z4_cd(savefig):
             color=sns.cubehelix_palette(8)[2],
             alpha=.7,)
 
-    plt.ylabel('Proportion of windows with\nconstraint Z{1}{0} (%)'.format(cutoff,u'$\geq$'), fontsize=12)
+    plt.ylabel('Proportion of windows with\nGnocchi{1}{0} (%)'.format(cutoff,u'$\geq$'), fontsize=12)
     plt.xlabel('Percentage of coding bases (%)', fontsize=12)
     ticks = range(0,len(fracs))
     labels = list(range(0,100,10))+['Exonic\nonlly']
@@ -402,7 +402,7 @@ def plt_prop_z4_cd(savefig):
 
 
 # efig. 2b
-def plt_hist_freq_z_exonic(savefig):
+def plt_hist_freq_gnocchi_exonic(savefig):
     
     download_fig_table('constraint_z_genome_1kb_exonic.txt')
     download_fig_table('constraint_z_genome_1kb.annot.txt')
@@ -425,7 +425,7 @@ def plt_hist_freq_z_exonic(savefig):
     ax2.hist(z2, bins=hist_bins, edgecolor=None, color = color2,alpha=0.7,density=False, label= label2)
 
     ax1.legend(loc='upper left', fontsize = 12.)
-    ax1.set_xlabel('Constraint Z',fontsize = 12.)   
+    ax1.set_xlabel('Gnocchi',fontsize = 12.)   
     ax1.set_ylabel('Frequency',fontsize = 12.,  color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
     ax2.set_ylabel('Frequency',fontsize = 12.,  color=color2)
@@ -443,7 +443,7 @@ def plt_hist_freq_z_exonic(savefig):
 
 
 # efig. 2c
-def plt_prop_z4_cd_titration(savefig):
+def plt_prop_gnocchi4_cd_titration(savefig):
     
     download_fig_table('constraint_z_genome_1kb.annot.txt')
     download_fig_table('constraint_z_genome_1kb_exonic.txt')
@@ -476,7 +476,7 @@ def plt_prop_z4_cd_titration(savefig):
     color = sns.cubehelix_palette(8)[2]
     plt.errorbar(y = [i*100 for i in fracs], x = range(0,len(fracs)), yerr=[i*100 for i in sems], 
                  color=color, ecolor=color, ls='', marker='o',elinewidth=2,alpha=0.7,)
-    plt.ylabel('Proportion of windows with\nconstraint Z{1}{0} (%)'.format(cutoff,u'$\geq$'), fontsize=12)
+    plt.ylabel('Proportion of windows with\nGnocchi{1}{0} (%)'.format(cutoff,u'$\geq$'), fontsize=12)
     plt.xlabel('Random draws of exonic windows (%)\ninto the non-coding genome', fontsize=12)
     plt.xticks(range(0,len(fracs)), np.arange(0,110,10))
      
@@ -487,7 +487,7 @@ def plt_prop_z4_cd_titration(savefig):
         plt.savefig(savefig, bbox_inches='tight') 
         
 # efig. 2d
-def plt_z_ptcl_nc_cd(savefig):
+def plt_gnochhi_ptcl_nc_cd(savefig):
     
     download_fig_table('constraint_z_genome_1kb.annot.txt')
     download_fig_table('constraint_z_genome_1kb_exonic.txt')
@@ -510,8 +510,8 @@ def plt_z_ptcl_nc_cd(savefig):
     color_ = sns.cubehelix_palette(8, start=.5, rot=-.5,)[2]
     plt.scatter(y = fracs, x = range(0,len(fracs)), color=color, alpha=0.7)
     
-    plt.ylabel('Constraint Z percentile of\nnon-coding region', fontsize=12)
-    plt.xlabel('Constraint Z percentile of coding exon', fontsize=12)
+    plt.ylabel('Gnocchi percentile of\nnon-coding region', fontsize=12)
+    plt.xlabel('Gnocchi percentile of coding exon', fontsize=12)
     plt.xticks(range(0,len(fracs)), np.arange(10,110,10))
     color=sns.cubehelix_palette(8)[-3]
     color=sns.cubehelix_palette(8)[2]
@@ -528,7 +528,7 @@ def plt_z_ptcl_nc_cd(savefig):
 
 
 # efig. 3a
-def plt_z_ptcl_annot_cd(savefig):
+def plt_gnocchi_ptcl_annot_cd(savefig):
     
     download_fig_table('constraint_z_genome_1kb_exonic.txt')
     download_fig_table('constraint_z_*_stringed_1kb.txt')
@@ -548,9 +548,9 @@ def plt_z_ptcl_annot_cd(savefig):
     }
     ann_label = {'cCRE-PLS':'Promoter','cCRE-dELS':'Enhancer',
                  'lncRNA':'lncRNA',
-                 'miRBase':'miRNA',                
+                 'miRNA':'miRNA',                
                 }
-    for annot in ['cCRE-PLS','cCRE-dELS','miRBase','lncRNA']:
+    for annot in ['cCRE-PLS','cCRE-dELS','miRNA','lncRNA']:
         df_z = pd.read_csv('fig_tables/constraint_z_{0}_stringed_1kb.txt'.format(annot),sep='\t',index_col='element_id')
         z_annot = df_z[(df_z['pass_qc'])]['z'].to_list()
         fracs = []
@@ -573,8 +573,8 @@ def plt_z_ptcl_annot_cd(savefig):
         plt.plot([i/10 for i in np.arange(10,100+step,step)], fracs2, color=ann_color[ann], linestyle='dashed')
 
     plt.legend(fontsize=12)
-    plt.ylabel('Constraint Z percentile of\nregulatory sequence'.format(annot), fontsize=12)
-    plt.xlabel('Constraint Z percentile of coding exon', fontsize=12)
+    plt.ylabel('Gnocchi percentile of\nregulatory sequence'.format(annot), fontsize=12)
+    plt.xlabel('Gnocchi percentile of coding exon', fontsize=12)
     plt.xticks(range(1,len(fracs)+1), np.arange(10,110,10))
     color=sns.cubehelix_palette(8)[-3]
     color=sns.cubehelix_palette(8)[2]
@@ -588,7 +588,7 @@ def plt_z_ptcl_annot_cd(savefig):
 
 
 # efig. 3b
-def plt_z_ptcl_annot_nc(savefig):
+def plt_gnocchi_ptcl_annot_nc(savefig):
     
     download_fig_table('constraint_z_genome_1kb.annot.txt')
     download_fig_table('constraint_z_*_stringed_1kb.txt')
@@ -608,9 +608,9 @@ def plt_z_ptcl_annot_nc(savefig):
     }
     ann_label = {'cCRE-PLS':'Promoter','cCRE-dELS':'Enhancer',
                  'lncRNA':'lncRNA',
-                 'miRBase':'miRNA',                
+                 'miRNA':'miRNA',                
                 }
-    for annot in ['cCRE-PLS','cCRE-dELS','miRBase','lncRNA']:
+    for annot in ['cCRE-PLS','cCRE-dELS','miRNA','lncRNA']:
         df_z = pd.read_csv('fig_tables/constraint_z_{0}_stringed_1kb.txt'.format(annot),sep='\t',index_col='element_id')
         z_annot = df_z[(df_z['pass_qc'])]['z'].to_list()
         fracs = []
@@ -633,8 +633,8 @@ def plt_z_ptcl_annot_nc(savefig):
         plt.plot([i/10 for i in np.arange(10,100+step,step)], fracs2, color=ann_color[ann], linestyle='dashed')
 
     plt.legend(fontsize=12)
-    plt.ylabel('Constraint Z percentile of\nregulatory sequence'.format(annot), fontsize=12)
-    plt.xlabel('Constraint Z percentile of coding exon', fontsize=12)
+    plt.ylabel('Gnocchi percentile of\nregulatory sequence'.format(annot), fontsize=12)
+    plt.xlabel('Gnocchi percentile of coding exon', fontsize=12)
     plt.xticks(range(1,len(fracs)+1), np.arange(10,110,10))
     color=sns.cubehelix_palette(8)[-3]
     color=sns.cubehelix_palette(8)[2]
@@ -701,7 +701,7 @@ def plt_enrichment_gwas_vs_ccre(savefig):
     plt.rcParams['legend.title_fontsize'] = 12.
     plt.legend(loc='upper left', fontsize = 12., title='GWAS variants')
     plt.xticks(bins[1:],bins[1:])
-    plt.xlabel('Constraint Z', fontsize=12)
+    plt.xlabel('Gnocchi', fontsize=12)
     plt.ylabel('Enrichment', fontsize=12)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
@@ -733,8 +733,8 @@ def plt_delta_pip(savefig):
     x = dfp['susie.pip_updated']
     plt.scatter(x=x,y=y,color=sns.cubehelix_palette(start=.5, rot=-.5, )[-2], alpha=0.4)
 
-    plt.xlabel('PIP$_z$', fontsize=12)
-    plt.ylabel('PIP$_z$ - PIP$_u$$_n$$_i$$_f$', fontsize=12)
+    plt.xlabel('PIP$_G$$_n$$_o$$_c$$_c$$_h$$_i$', fontsize=12)
+    plt.ylabel('PIP$_G$$_n$$_o$$_c$$_c$$_h$$_i$ - PIP$_u$$_n$$_i$$_f$', fontsize=12)
 
     sns.despine(left=False, right=True, top=True, bottom=False)
     plt.tick_params(axis='both',top=False,right=False)
@@ -751,25 +751,26 @@ def plt_comparison_roc(pos,neg,dist2exon,savefig):
     os.system('tar -xvf comparisons.tar.gz')
     os.chdir('../')
 
-    scores = ['z','Orion','CDTS','gwRVIS','DR','phastCons','phyloP','GERP']
+    scores = ['Orion','CDTS','gwRVIS','DR',"phastCons","phyloP","GERP"]
+    scores.append('z')
     score_color = {
         'z':sns.cubehelix_palette(start=.5, rot=-.5, )[-2],
         'Orion':'#33a02c','CDTS':'#fb9a99','DR':'#993404','gwRVIS':'#6baed6',   
         'phastCons':'#969696','phyloP':'#737373','GERP':'#bdbdbd'
     }
-    score_label = {'z': 'Constraint Z'} 
+    score_label = {'z': 'Gnocchi'} 
 
     df_pos = {'gwas_catalog': 'comparisons_gwas_catalog_repl', 
               'gwas_fine-mapping':'comparisons_gwas_fine-mapping_pip09', 
               'gwas_fine-mapping_hc':'comparisons_gwas_fine-mapping_pip09_hc', 
-              'clinvar_pathogenic':'comparisons_clinvar_pathogenic',     
+              'clinvar_plp_hgmd':'comparisons_41588_2018_62_MOESM4_ESM_clinvar_plp',     
           }
     title_label = {'gwas_catalog':'GWAS Catalog','gwas_fine-mapping':'GWAS fine-mapping',
                    'gwas_fine-mapping_hc':'GWAS fine-mapping\n(high confidence)',
-                   'clinvar_pathogenic':'ClinVar pathogenic'}
+                   'clinvar_plp_hgmd':'Likely pathogenic'}
     df_neg = {
-        'gnomad_maf5': 'comparisons_gnomad_maf5', 
-        'gnomad_mac1': 'comparisons_gnomad_mac1.sample_100k', 
+        'topmed_maf5':'comparisons_topmed_maf5.sampled.cov', 
+        'topmed_mac1':'comparisons_topmed_mac1.sampled.cov', 
           }
     sampling = 10
     
@@ -782,7 +783,7 @@ def plt_comparison_roc(pos,neg,dist2exon,savefig):
     df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
     df_0 = df_0[df_0['dist2exon']>=dist2exon]
     df_0['group'] = 0 
-    if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
+    if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=714)
     df_01 = pd.concat([df_1,df_0]).drop_duplicates(subset=['locus'])
 
     d_auc = {}
@@ -824,14 +825,14 @@ def plt_comparison_auc_af(pos,savefig):
     
     def count_n_maf(df):
         d = {}
-        df = df.dropna(subset=['AF'])
-        d['mac0'] = len(df[ (df['AC'] == 0)])
-        d['mac1'] = len(df[ (df['AC'] == 1)])
-        d['maf001'] = len(df[ (df['AC'] > 1) & (df['AF'] <= 0.01/100)])
-        d['maf001_01'] = len(df[ (df['AF'] > 0.01/100) & (df['AF'] <= 0.1/100)])
-        d['maf01_1'] = len(df[ (df['AF'] > 0.1/100) & (df['AF'] <= 1/100)])
-        d['maf1_5'] = len(df[ (df['AF'] > 1/100) & (df['AF'] <= 5/100)])
-        d['maf5'] = len(df[ (df['AF'] > 5/100)])
+        df = df.dropna(subset=['AF_topmed'])
+        d['mac0'] = len(df[ (df['AC_topmed'] == 0)])
+        d['mac1'] = len(df[ (df['AC_topmed'] == 1)])
+        d['maf001'] = len(df[ (df['AC_topmed'] > 1) & (df['AF_topmed'] <= 0.01/100)])
+        d['maf001_01'] = len(df[ (df['AF_topmed'] > 0.01/100) & (df['AF_topmed'] <= 0.1/100)])
+        d['maf01_1'] = len(df[ (df['AF_topmed'] > 0.1/100) & (df['AF_topmed'] <= 1/100)])
+        d['maf1_5'] = len(df[ (df['AF_topmed'] > 1/100) & (df['AF_topmed'] <= 5/100)])
+        d['maf5'] = len(df[ (df['AF_topmed'] > 5/100)])
         d2 = dict([k,d[k]/len(df)*100] for k in d)
         return d,d2
     
@@ -840,30 +841,31 @@ def plt_comparison_auc_af(pos,savefig):
     os.system('tar -xvf comparisons.tar.gz')
     os.chdir('../')
 
-    scores = ['z','Orion','CDTS','gwRVIS','DR']
+    scores = ['Orion','CDTS','gwRVIS','DR']
+    scores.append('z')
     score_color = {
         'z':sns.cubehelix_palette(start=.5, rot=-.5, )[-2],
         'Orion':'#33a02c','CDTS':'#fb9a99','DR':'#993404','gwRVIS':'#6baed6',   
         'phastCons':'#969696','phyloP':'#737373','GERP':'#bdbdbd'
     }
-    score_label = {'z': 'Constraint Z'} 
+    score_label = {'z': 'Gnocchi'} 
 
     df_pos = {'gwas_catalog': 'comparisons_gwas_catalog_repl', 
               'gwas_fine-mapping':'comparisons_gwas_fine-mapping_pip09', 
               'gwas_fine-mapping_hc':'comparisons_gwas_fine-mapping_pip09_hc', 
-              'clinvar_pathogenic':'comparisons_clinvar_pathogenic',     
+              'clinvar_plp_hgmd':'comparisons_likely_pathogenic_clinvar_hgmd',     
           }
     title_label = {'gwas_catalog':'GWAS Catalog','gwas_fine-mapping':'GWAS fine-mapping',
                    'gwas_fine-mapping_hc':'GWAS fine-mapping\n(high confidence)',
-                   'clinvar_pathogenic':'ClinVar pathogenic'}
+                   'clinvar_plp_hgmd':'Likely pathogenic'}
 
     df_neg = {
-        'gnomad_maf5': 'comparisons_gnomad_maf5', 
-        'gnomad_mac1': 'comparisons_gnomad_mac1.sample_100k', 
-        'gnomad_maf001': 'comparisons_gnomad_maf001.sampled', 
-        'gnomad_maf001_01': 'comparisons_gnomad_maf001_01.sampled', 
-        'gnomad_maf01_1': 'comparisons_gnomad_maf01_1.sampled', 
-        'gnomad_maf1_5': 'comparisons_gnomad_maf1_5.sampled', 
+        'topmed_maf5': 'comparisons_topmed_maf5.sampled.cov', 
+        'topmed_mac1': 'comparisons_topmed_mac1.sampled.cov', 
+        'topmed_maf001': 'comparisons_topmed_maf001.sampled.cov', 
+        'topmed_maf001_01': 'comparisons_topmed_maf001_01.sampled.cov', 
+        'topmed_maf01_1': 'comparisons_topmed_maf01_1.sampled.cov', 
+        'topmed_maf1_5': 'comparisons_topmed_maf1_5.sampled.cov', 
           }
 
     sampling = 10
@@ -874,10 +876,10 @@ def plt_comparison_auc_af(pos,savefig):
     d_auc = {}
     for score in scores: 
         d_auc[score] = []
-        for neg in ['gnomad_mac1','gnomad_maf001','gnomad_maf001_01','gnomad_maf01_1','gnomad_maf1_5','gnomad_maf5']:
+        for neg in ['topmed_mac1','topmed_maf001','topmed_maf001_01','topmed_maf01_1','topmed_maf1_5','topmed_maf5']:
             df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
             df_0['group'] = 0
-            if sampling: df_0 = df_0.sample(n=min(sampling*len(df_1),len(df_0)), random_state=1)
+            if sampling: df_0 = df_0.sample(n=min(sampling*len(df_1),len(df_0)), random_state=714)
 
             df_01 = pd.concat([df_1,df_0]).drop_duplicates(subset=['locus'])
 
@@ -919,7 +921,7 @@ def plt_comparison_auc_af(pos,savefig):
 
 
 # efig. 6
-def plt_comparison_roc_z(pos,neg,dist2exon,savefig):
+def plt_comparison_roc_gnocchi(pos,neg,dist2exon,savefig):
     
     download_fig_table('comparisons.tar.gz')
     os.chdir('fig_tables')
@@ -928,10 +930,10 @@ def plt_comparison_roc_z(pos,neg,dist2exon,savefig):
 
     scores = ['z','z_sliding100','z_trimer','z_heptamer',]
     score_label = {
-        'z': 'Constraint Z',
-        'z_sliding100':'Constraint Z, sliding',
-        'z_trimer':'Trimer-only Z',
-        'z_heptamer':'Heptamer-only Z',
+        'z': 'Gnocchi',
+        'z_sliding100':'Gnocchi, sliding',
+        'z_trimer':'Trimer-only',
+        'z_heptamer':'Heptamer-only',
                   }   
     c = sns.cubehelix_palette(start=.5, rot=-.5, )[-2]
     c2 = sns.cubehelix_palette(start=.5, rot=-.5, )[-3]
@@ -942,15 +944,15 @@ def plt_comparison_roc_z(pos,neg,dist2exon,savefig):
     df_pos = {'gwas_catalog': 'comparisons_gwas_catalog_repl', 
               'gwas_fine-mapping':'comparisons_gwas_fine-mapping_pip09', 
               'gwas_fine-mapping_hc':'comparisons_gwas_fine-mapping_pip09_hc', 
-              'clinvar_pathogenic':'comparisons_clinvar_pathogenic',     
+              'clinvar_plp_hgmd':'comparisons_likely_pathogenic_clinvar_hgmd',     
           }
     title_label = {'gwas_catalog':'GWAS Catalog','gwas_fine-mapping':'GWAS fine-mapping',
                    'gwas_fine-mapping_hc':'GWAS fine-mapping\n(high confidence)',
-                   'clinvar_pathogenic':'ClinVar pathogenic'}
+                   'clinvar_plp_hgmd':'Likely pathogenic'}
 
     df_neg = {
-        'gnomad_maf5': 'comparisons_gnomad_maf5', 
-        'gnomad_mac1': 'comparisons_gnomad_mac1.sample_100k', 
+        'topmed_maf5': 'comparisons_topmed_maf5.sampled.cov', 
+        'topmed_mac1': 'comparisons_topmed_mac1.sampled.cov', 
           }
     sampling = 10
 
@@ -963,7 +965,7 @@ def plt_comparison_roc_z(pos,neg,dist2exon,savefig):
     df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
     df_0 = df_0[df_0['dist2exon']>=dist2exon]
     df_0['group'] = 0 
-    if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
+    if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=714)
 
     df_01 = pd.concat([df_1,df_0]).drop_duplicates(subset=['locus'])
 
@@ -993,7 +995,7 @@ def plt_comparison_roc_z(pos,neg,dist2exon,savefig):
     handles = [handles[i] for i in sorted_auc]
     labels = [labels[i] for i in sorted_auc]
 
-    plt.legend(handles,labels,bbox_to_anchor=(1, 0.75))
+    ax.legend(handles,labels,loc="lower right")
     plt.title(title_label[pos])
 
     plt.ylabel('True positive rate', fontsize=12)
@@ -1012,6 +1014,7 @@ def plt_score_corr(scores,savefig):
     
     download_fig_table('genome_1kb.scores.txt')
     df_scores = pd.read_csv('fig_tables/genome_1kb.scores.txt',sep='\t')
+    df_scores = df_scores.rename(columns={"Constraint Z":"Gnocchi"})
 
     plt.clf()
     scale = 0.7
@@ -1098,8 +1101,8 @@ def plt_power_depl(ws,savefig):
     plt.yticks([0,.2,.4,.6,.8, 1.0], ['0','20','40','60','80','100'])
     if logscale: plt.xscale('log')
     plt.xlabel('Sample size required',fontsize = 12.,)
-    if ws == 1000: plt.ylabel('Percent of 1kb windows powered\nto detect constraint (Z{0}4)'.format(u'$\geq$'),fontsize = 12.,)
-    if ws == 100: plt.ylabel('Percent of 100bp windows powered\nto detect constraint (Z{0}4)'.format(u'$\geq$'), fontsize = 12.,)
+    if ws == 1000: plt.ylabel('Percent of 1kb windows powered\nto detect constraint (Gnocchi{0}4)'.format(u'$\geq$'),fontsize = 12.,)
+    if ws == 100: plt.ylabel('Percent of 100bp windows powered\nto detect constraint (Gnocchi{0}4)'.format(u'$\geq$'), fontsize = 12.,)
 
     n_v3 = 76156
     plt.axvline(x = n_v3, color='#969696', linestyle='dashed',lw=2.0)
@@ -1127,29 +1130,29 @@ def plt_comparison_auc_ws(savefig):
     df_pos = {'gwas_catalog': 'comparisons_gwas_catalog_repl', 
               'gwas_fine-mapping':'comparisons_gwas_fine-mapping_pip09', 
               'gwas_fine-mapping_hc':'comparisons_gwas_fine-mapping_pip09_hc', 
-              'clinvar_pathogenic':'comparisons_clinvar_pathogenic',     
+              'clinvar_plp_hgmd':'comparisons_likely_pathogenic_clinvar_hgmd',     
           }
     title_label = {'gwas_catalog':'GWAS Catalog','gwas_fine-mapping':'GWAS fine-mapping',
                    'gwas_fine-mapping_hc':'GWAS fine-mapping\n(high confidence)',
-                   'clinvar_pathogenic':'ClinVar pathogenic'}
+                   'clinvar_plp_hgmd':'Likely pathogenic'}
 
     df_neg = {
-        'gnomad_maf5': 'comparisons_gnomad_maf5', 
-        'gnomad_mac1': 'comparisons_gnomad_mac1.sample_100k', 
+        'topmed_maf5': 'comparisons_topmed_maf5.sampled.cov', 
+        'topmed_mac1': 'comparisons_topmed_mac1.sampled.cov', 
           }
 
     sampling = 10
 
-    neg = 'gnomad_maf5'
+    neg = 'topmed_maf5'
     d_dat_auc = {}
-    for pos in ['gwas_catalog','gwas_fine-mapping','gwas_fine-mapping_hc','clinvar_pathogenic']:
-        if pos == 'clinvar_pathogenic': neg = 'gnomad_mac1'
+    for pos in ['gwas_catalog','gwas_fine-mapping','gwas_fine-mapping_hc','clinvar_plp_hgmd']:
+        if pos == 'clinvar_plp_hgmd': neg = 'topmed_mac1'
         d_dat_auc[pos] = {}
         df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
         df_1['group'] = 1
         df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
         df_0['group'] = 0 
-        if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
+        if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=714)
 
         df_01 = pd.concat([df_1,df_0]).drop_duplicates(subset=['locus'])
 
@@ -1161,14 +1164,14 @@ def plt_comparison_auc_ws(savefig):
             auc = roc_auc_score(y_true, y_probas)
             d_dat_auc[pos][score] = auc
     d_ws = {'100':'z_100bp','500':'z_500bp','1000':'z','2000':'z_2kb','3000':'z_3kb',}
-    d_color = {'clinvar_pathogenic':sns.cubehelix_palette(8)[2],
+    d_color = {'clinvar_plp_hgmd':sns.cubehelix_palette(8)[2],
                'gwas_catalog':sns.cubehelix_palette(start=.5, rot=-.5, )[-4],
                'gwas_fine-mapping':sns.cubehelix_palette(start=.5, rot=-.5, )[-3],
                'gwas_fine-mapping_hc':sns.cubehelix_palette(start=.5, rot=-.5, )[-2]}
     d_label = title_label
 
     plt.clf()
-    plt.figure(figsize=(4.,4.))
+    plt.figure(figsize=(4.5,4.5))
     for dat in d_dat_auc:
         y = []
         for ws in d_ws:
@@ -1207,29 +1210,29 @@ def plt_comparison_auc_pop(savefig):
     df_pos = {'gwas_catalog': 'comparisons_gwas_catalog_repl', 
               'gwas_fine-mapping':'comparisons_gwas_fine-mapping_pip09', 
               'gwas_fine-mapping_hc':'comparisons_gwas_fine-mapping_pip09_hc', 
-              'clinvar_pathogenic':'comparisons_clinvar_pathogenic',     
+              'clinvar_plp_hgmd':'comparisons_likely_pathogenic_clinvar_hgmd',     
           }
     title_label = {'gwas_catalog':'GWAS Catalog','gwas_fine-mapping':'GWAS fine-mapping',
                    'gwas_fine-mapping_hc':'GWAS fine-mapping\n(high confidence)',
-                   'clinvar_pathogenic':'ClinVar pathogenic'}
+                   'clinvar_plp_hgmd':'Likely pathogenic'}
 
     df_neg = {
-        'gnomad_maf5': 'comparisons_gnomad_maf5', 
-        'gnomad_mac1': 'comparisons_gnomad_mac1.sample_100k', 
+        'topmed_maf5': 'comparisons_topmed_maf5.sampled.cov', 
+        'topmed_mac1': 'comparisons_topmed_mac1.sampled.cov', 
           }
 
     sampling = 10
 
-    neg = 'gnomad_maf5'
+    neg = 'topmed_maf5'
     d_dat_auc = {}
-    for pos in ['gwas_catalog','gwas_fine-mapping','gwas_fine-mapping_hc','clinvar_pathogenic']:
-        if pos == 'clinvar_pathogenic': neg = 'gnomad_mac1'
+    for pos in ['gwas_catalog','gwas_fine-mapping','gwas_fine-mapping_hc','clinvar_plp_hgmd']:
+        if pos == 'clinvar_plp_hgmd': neg = 'topmed_mac1'
         d_dat_auc[pos] = {}
         df_1 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_pos[pos]),sep='\t')
         df_1['group'] = 1
         df_0 = pd.read_csv('fig_tables/comparisons/{0}.txt'.format(df_neg[neg]),sep='\t')
         df_0['group'] = 0 
-        if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=1)
+        if sampling: df_0 = df_0.sample(n=sampling*len(df_1), random_state=714)
 
         df_01 = pd.concat([df_1,df_0]).drop_duplicates(subset=['locus'])
 
@@ -1252,11 +1255,11 @@ def plt_comparison_auc_pop(savefig):
                'z_nfe':'gnomAD NFE N=34,029',}
     d_label_x = {'gwas_catalog':'GWAS\nCatalog','gwas_fine-mapping':'GWAS\nfine-mapping',
                  'gwas_fine-mapping_hc':'GWAS\nfine-mapping\n(high confidence)',
-                 'clinvar_pathogenic':'ClinVar\npathogenic'}
+                 'clinvar_plp_hgmd':'Likely\npathogenic'}
     zs = ['z','z_nfe','z_global']
     
     plt.clf()
-    plt.figure(figsize=(4.,4.))
+    plt.figure(figsize=(4.5,4.5))
     for z in zs:
         plt.scatter(x=range(0,len(d_dat_auc)),y=[d_dat_auc[dat][z] for dat in d_dat_auc],
                     color=d_color[z],alpha=0.7,label=d_label[z])
@@ -1271,7 +1274,6 @@ def plt_comparison_auc_pop(savefig):
 
     if savefig:
         plt.savefig(savefig, bbox_inches='tight') 
-
 
 
 
