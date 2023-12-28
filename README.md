@@ -1,6 +1,7 @@
 # Code for gnomAD v3 WGS flagship manuscript
 Manuscript at: [Chen et al., 2023](https://www.nature.com/articles/s41586-023-06045-0).
-Note: Pre-computed genomic constraint scores (called Gnocchi: Genomic Non-Coding Constraint of HaploInsufficient variation) are available in the Supplementary Dataset 2 & 3 of the paper and can also be downloaded from the (gnomAD official website)[https://gnomad.broadinstitute.org/downloads#v3-genomic-constraint].
+
+Note: Pre-computed genomic constraint scores (called Gnocchi: Genomic Non-Coding Constraint of HaploInsufficient variation) are available in the Supplementary Dataset 2 & 3 of the paper and can also be downloaded from the [gnomAD official website](https://gnomad.broadinstitute.org/downloads#v3-genomic-constraint).
 
 This repository provides 
 
