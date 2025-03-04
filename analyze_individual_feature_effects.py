@@ -7,7 +7,7 @@ import statsmodels.api as sm
 # Download variant & annotation files
 input_bucket = 'gs://gnomad-nc-constraint-v31-paper'
 if not os.path.exists('{0}/genomic_features'.format(output_dir)): os.mkdir('{0}/genomic_features'.format(output_dir))
-os.system('gsutil cp {0}/genomic_features/* {1}'.format(input_bucket,output_dir))
+os.system('gsutil cp {0}/genomic_features/* {1}/genomic_features'.format(input_bucket,output_dir))
 
 # de novo variants
 df_dnm1 = pd.read_csv('{0}/genomic_features/DNM_decode_psychencode_site_context.mutation_rate.txt'.format(output_dir),sep='\t')  
@@ -63,7 +63,7 @@ df = pd.read_csv('{0}/genomic_features/dnm01_10x_ft_logit_regularized_coef_z_3me
 df["bonf"] = np.where(df["context"].isin(["ACG","CCG","GCG","TCG"]),0.05/4/8, 0.05/4/13)
 df_sig = df[df["pval"]<=df["bonf"]]
 df_sig = df_sig.drop_duplicates(subset=["context","feature"])
-df_sig.to_csv(
+df_sig[["context","feature","window","coef","se","pval"]].to_csv(
     '{0}/genomic_features/dnm01_10x_ft_logit_regularized_coef_z_3mer_context_flnk_1k-1M.selected.txt'.format(output_dir),
            sep="\t", quoting=csv.QUOTE_NONE, header=True, index=False)
 # this file corresponds to gs://gnomad-nc-constraint-v31-paper/misc/genomic_features13_sel.txt
